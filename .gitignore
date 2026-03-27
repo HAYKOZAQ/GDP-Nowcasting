@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.env
+.venv
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# Streamlit
+.streamlit/
+! .streamlit/config.toml
+
+# Data (Raw/Intermediate - keeping /data for app)
+data_raw/
+data_scraped/
+data_xlsx/
+figures/
+scripts/
+
+# OS
+.DS_Store
+Thumbs.db
