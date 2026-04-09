@@ -8,7 +8,8 @@ st.set_page_config(page_title="ՀԱՅԱՍՏԱՆ 2025: ՍՈՑԻԱԼ-ՏՆՏԵՍԱ�
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "data")
-NOWCAST_RESULTS_DIR = os.path.join(os.path.dirname(BASE_DIR), "nowcasting-CODE", "results", "backtests")
+NOWCAST_RESULTS_DIR = os.path.join(BASE_DIR, "nowcasting_results")
+NOWCAST_FALLBACK_DIR = os.path.join(os.path.dirname(BASE_DIR), "nowcasting-CODE", "results", "backtests")
 
 @st.cache_data
 def load_data(filename):
@@ -16,9 +17,18 @@ def load_data(filename):
 
 @st.cache_data
 def load_nowcasting_results():
-    summary_path = os.path.join(NOWCAST_RESULTS_DIR, "backtest_summary.csv")
-    predictions_path = os.path.join(NOWCAST_RESULTS_DIR, "backtest_predictions.csv")
-    if not (os.path.exists(summary_path) and os.path.exists(predictions_path)):
+    candidate_dirs = [NOWCAST_RESULTS_DIR, NOWCAST_FALLBACK_DIR]
+    summary_path = None
+    predictions_path = None
+    for candidate_dir in candidate_dirs:
+        candidate_summary = os.path.join(candidate_dir, "backtest_summary.csv")
+        candidate_predictions = os.path.join(candidate_dir, "backtest_predictions.csv")
+        if os.path.exists(candidate_summary) and os.path.exists(candidate_predictions):
+            summary_path = candidate_summary
+            predictions_path = candidate_predictions
+            break
+
+    if not summary_path or not predictions_path:
         return None, None
 
     summary = pd.read_csv(summary_path)
@@ -84,7 +94,7 @@ if page == "ՀՆԱ nowcasting":
 
     summary, predictions = load_nowcasting_results()
     if summary is None or predictions is None:
-        st.error("Nowcasting արդյունքները չեն գտնվել։ Սպասվում են `nowcasting-CODE/results/backtests/backtest_summary.csv` և `backtest_predictions.csv` ֆայլերը։")
+        st.error("Nowcasting արդյունքները չեն գտնվել։ Սպասվում են `nowcasting_results/backtest_summary.csv` և `nowcasting_results/backtest_predictions.csv` ֆայլերը։")
     else:
         stage_order = ["Early", "Mid", "Late"]
         stage_names = {"Early": "Վաղ փուլ", "Mid": "Միջին փուլ", "Late": "Ուշ փուլ"}
