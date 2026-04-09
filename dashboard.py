@@ -864,13 +864,17 @@ elif page == "Ժողովրդագրություն և Միգրացիա":
     st.markdown("---")
     
     df_sum = load_data('adv_summary_stats.csv')
-    pop_24 = float(df_sum[df_sum['Ցուցանիշ'] == 'Մշտական բնակչություն']['2024'].values[0]) / 1000000
-    pop_25 = float(df_sum[df_sum['Ցուցանիշ'] == 'Մշտական բնակչություն']['2025'].values[0]) / 1000000
+    pop_24_raw = float(df_sum[df_sum['Ցուցանիշ'] == 'Մշտական բնակչություն']['2024'].values[0])
+    pop_25_raw = float(df_sum[df_sum['Ցուցանիշ'] == 'Մշտական բնակչություն']['2025'].values[0])
+    pop_24 = pop_24_raw / 1000000
+    pop_25 = pop_25_raw / 1000000
+    pop_abs_change = int(pop_25_raw - pop_24_raw)
+    pop_growth_pct = ((pop_25_raw / pop_24_raw) - 1) * 100
     mig_24 = df_sum[df_sum['Ցուցանիշ'] == 'Միգրացիայի մնացորդ (մարդ)']['2024'].values[0]
 
     c1, c2, c3 = st.columns(3)
     c1.metric("Բնակչություն (2024)", f"{pop_24:.2f} մլն")
-    c2.metric("Բնակչություն (2025)", f"{pop_25:.2f} մլն", delta=f"{(pop_25-pop_24)*100:.1f}%")
+    c2.metric("Բնակչություն (2025)", f"{pop_25:.2f} մլն", delta=f"+{pop_growth_pct:.1f}% | +{pop_abs_change:,} մարդ")
     c3.metric("Միգրացիա (2024)", f"{mig_24}", "զուտ աճ")
     
     st.subheader("Բնակչության դինամիկան և Միգրացիոն հոսքերը")
