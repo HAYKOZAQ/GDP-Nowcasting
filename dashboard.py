@@ -67,6 +67,8 @@ html, body, [class*="css"] { font-family: 'Noto Sans Armenian', sans-serif; }
 .main { background: #0d1117; }
 h1, h2, h3 { color: #58a6ff !important; font-weight: 700; }
 .stMarkdown p, .stMarkdown li { color: #c9d1d9; font-size: 1.1rem; line-height: 1.6; }
+.stMetric [data-testid="stMetricValue"] { font-size: 2.25rem; line-height: 1.1; }
+.stMetric [data-testid="stMetricLabel"] p { font-size: 1rem; }
 .sidebar .sidebar-content { background-image: linear-gradient(#161b22, #0d1117); }
 </style>""", unsafe_allow_html=True)
 
