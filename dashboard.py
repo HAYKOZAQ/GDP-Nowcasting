@@ -10,6 +10,8 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "data")
 NOWCAST_RESULTS_DIR = os.path.join(BASE_DIR, "nowcasting_results")
 NOWCAST_FALLBACK_DIR = os.path.join(os.path.dirname(BASE_DIR), "nowcasting-CODE", "results", "backtests")
+FORECAST_DIR = os.path.join(BASE_DIR, "nowcasting_results")
+FORECAST_FALLBACK_DIR = os.path.join(os.path.dirname(BASE_DIR), "nowcasting-CODE", "results", "forecasts")
 
 @st.cache_data
 def load_data(filename):
@@ -43,6 +45,46 @@ def load_nowcasting_results():
             predictions[column] = pd.to_numeric(predictions[column], errors="coerce")
 
     return summary, predictions
+
+@st.cache_data
+def load_future_forecast():
+    candidate_paths = [
+        os.path.join(FORECAST_DIR, "future_gdp_forecast.csv"),
+        os.path.join(FORECAST_FALLBACK_DIR, "future_gdp_forecast.csv"),
+    ]
+    forecast_path = next((path for path in candidate_paths if os.path.exists(path)), None)
+    if not forecast_path:
+        return None
+
+    forecast = pd.read_csv(forecast_path, parse_dates=["forecast_date", "last_observed_quarter"])
+    for column in ["forecast", "interval_lo_50", "interval_hi_50", "interval_lo_90", "interval_hi_90"]:
+        if column in forecast.columns:
+            forecast[column] = pd.to_numeric(forecast[column], errors="coerce")
+
+    return forecast.sort_values("horizon").reset_index(drop=True)
+
+@st.cache_data
+def load_recent_actual_quarters():
+    candidate_dirs = [NOWCAST_RESULTS_DIR, NOWCAST_FALLBACK_DIR]
+    predictions_path = None
+    for candidate_dir in candidate_dirs:
+        candidate_predictions = os.path.join(candidate_dir, "backtest_predictions.csv")
+        if os.path.exists(candidate_predictions):
+            predictions_path = candidate_predictions
+            break
+
+    if not predictions_path:
+        return None
+
+    predictions = pd.read_csv(predictions_path)
+    actuals = (
+        predictions[["target_quarter", "actual"]]
+        .dropna()
+        .drop_duplicates()
+        .sort_values("target_quarter")
+    )
+    actuals["actual"] = pd.to_numeric(actuals["actual"], errors="coerce")
+    return actuals[actuals["target_quarter"].astype(str).str.startswith(("2025", "2026-Q1"))].reset_index(drop=True)
 
 PERIOD_MAP = {
     1: "Հունվար", 2: "Փետրվար", 3: "Մարտ", 4: "Ապրիլ", 5: "Մայիս", 6: "Հունիս",
@@ -93,6 +135,139 @@ page = st.sidebar.radio("Ընտրեք բաժինը", [
 
 if page == "ՀՆԱ nowcasting":
     st.title("Հայաստանի Հանրապետության ՀՆԱ-ի Nowcasting")
+
+    future_forecast = load_future_forecast()
+    recent_actuals = load_recent_actual_quarters()
+    if future_forecast is not None and not future_forecast.empty:
+        st.markdown(
+            """
+            <div style="background:rgba(46,160,67,0.14); border-left:4px solid #2ea043; padding:14px 18px; border-radius:10px; margin:8px 0 18px 0;">
+            <strong>2026թ. Q2-Q4 ՀՆԱ-ի առաջընթաց կանխատեսում.</strong> Այս բաժինը ներկայացնում է 2026թ. առաջին եռամսյակի տեղեկատվական փաթեթի հիման վրա ստացված եռամսյակային կանխատեսումները։
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        forecast_metric_cols = st.columns(len(future_forecast))
+        for idx, (_, row) in enumerate(future_forecast.iterrows()):
+            forecast_metric_cols[idx].metric(
+                row["target_quarter"],
+                f"{row['forecast']:.2f}",
+                f"50% միջակայք՝ {row['interval_lo_50']:.2f} – {row['interval_hi_50']:.2f}",
+            )
+
+        last_observed_label = "2026-Q1"
+        if pd.notna(future_forecast.iloc[0]["last_observed_quarter"]):
+            last_observed_label = future_forecast.iloc[0]["last_observed_quarter"].strftime("%Y-%m-%d")
+        st.caption(
+            f"Ընտրված մոդել՝ {future_forecast.iloc[0]['selected_model']}. "
+            f"Կանխատեսումն իրականացվել է մինչև {last_observed_label} հասանելի տվյալներով։"
+        )
+
+        forecast_table = future_forecast.copy()
+        forecast_table["Կանխատեսում"] = forecast_table["forecast"].map(lambda x: f"{x:.3f}")
+        forecast_table["50% միջակայք"] = forecast_table.apply(
+            lambda row: f"{row['interval_lo_50']:.3f} - {row['interval_hi_50']:.3f}", axis=1
+        )
+        forecast_table["90% միջակայք"] = forecast_table.apply(
+            lambda row: f"{row['interval_lo_90']:.3f} - {row['interval_hi_90']:.3f}", axis=1
+        )
+        st.dataframe(
+            forecast_table[["target_quarter", "Կանխատեսում", "50% միջակայք", "90% միջակայք"]],
+            use_container_width=True,
+            hide_index=True,
+        )
+
+        forecast_chart = go.Figure()
+        if recent_actuals is not None and not recent_actuals.empty:
+            forecast_chart.add_trace(
+                go.Scatter(
+                    x=recent_actuals["target_quarter"],
+                    y=recent_actuals["actual"],
+                    mode="lines+markers+text",
+                    name="Փաստացի ՀՆԱ",
+                    line=dict(color="#c9d1d9", width=3),
+                    marker=dict(size=9, color="#c9d1d9"),
+                    text=[f"{value:.1f}" for value in recent_actuals["actual"]],
+                    textposition="top center",
+                )
+            )
+        forecast_chart.add_trace(
+            go.Scatter(
+                x=future_forecast["target_quarter"],
+                y=future_forecast["interval_hi_90"],
+                mode="lines",
+                line=dict(width=0),
+                hoverinfo="skip",
+                showlegend=False,
+                name="90% միջակայք",
+            )
+        )
+        forecast_chart.add_trace(
+            go.Scatter(
+                x=future_forecast["target_quarter"],
+                y=future_forecast["interval_lo_90"],
+                mode="lines",
+                line=dict(width=0),
+                fill="tonexty",
+                fillcolor="rgba(88,166,255,0.14)",
+                hoverinfo="skip",
+                name="90% միջակայք",
+            )
+        )
+        forecast_chart.add_trace(
+            go.Scatter(
+                x=future_forecast["target_quarter"],
+                y=future_forecast["interval_hi_50"],
+                mode="lines",
+                line=dict(width=0),
+                hoverinfo="skip",
+                showlegend=False,
+                name="50% միջակայք",
+            )
+        )
+        forecast_chart.add_trace(
+            go.Scatter(
+                x=future_forecast["target_quarter"],
+                y=future_forecast["interval_lo_50"],
+                mode="lines",
+                line=dict(width=0),
+                fill="tonexty",
+                fillcolor="rgba(46,160,67,0.24)",
+                hoverinfo="skip",
+                name="50% միջակայք",
+            )
+        )
+        forecast_chart.add_trace(
+            go.Scatter(
+                x=future_forecast["target_quarter"],
+                y=future_forecast["forecast"],
+                mode="lines+markers+text",
+                name="Կանխատեսված ՀՆԱ",
+                line=dict(color="#f2cc60", width=4),
+                marker=dict(size=11, color="#f2cc60"),
+                text=[f"{value:.2f}" for value in future_forecast["forecast"]],
+                textposition="top center",
+            )
+        )
+        if recent_actuals is not None and not recent_actuals.empty:
+            last_actual = recent_actuals.iloc[-1]
+            forecast_chart.add_trace(
+                go.Scatter(
+                    x=[last_actual["target_quarter"]] + future_forecast["target_quarter"].tolist(),
+                    y=[last_actual["actual"]] + future_forecast["forecast"].tolist(),
+                    mode="lines",
+                    line=dict(color="#f2cc60", width=4),
+                    hoverinfo="skip",
+                    showlegend=False,
+                )
+            )
+        forecast_chart.update_layout(
+            title="2026թ. եռամսյակային ՀՆԱ-ի կանխատեսման ուղեգիծ",
+            xaxis_title="Եռամսյակ",
+            yaxis_title="ՀՆԱ YoY ինդեքս",
+        )
+        st.plotly_chart(S(forecast_chart, h=460), use_container_width=True)
 
     summary, predictions = load_nowcasting_results()
     if summary is None or predictions is None:
