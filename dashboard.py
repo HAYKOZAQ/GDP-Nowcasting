@@ -64,6 +64,30 @@ def load_future_forecast():
     return forecast.sort_values("horizon").reset_index(drop=True)
 
 @st.cache_data
+def load_google_ablation():
+    candidate_dirs = [NOWCAST_RESULTS_DIR, NOWCAST_FALLBACK_DIR]
+    summary_path = None
+    dm_path = None
+    for candidate_dir in candidate_dirs:
+        candidate_summary = os.path.join(candidate_dir, "google_trends_ablation_summary.csv")
+        candidate_dm = os.path.join(candidate_dir, "google_trends_ablation_dm.csv")
+        if os.path.exists(candidate_summary) and os.path.exists(candidate_dm):
+            summary_path = candidate_summary
+            dm_path = candidate_dm
+            break
+
+    if not summary_path or not dm_path:
+        return None, None
+
+    ablation_summary = pd.read_csv(summary_path)
+    ablation_dm = pd.read_csv(dm_path)
+    for frame in [ablation_summary, ablation_dm]:
+        for column in frame.columns:
+            if column not in {"model", "stage", "loss", "model_a", "model_b", "better_model"}:
+                frame[column] = pd.to_numeric(frame[column], errors="ignore")
+    return ablation_summary, ablation_dm
+
+@st.cache_data
 def load_recent_actual_quarters():
     candidate_dirs = [NOWCAST_RESULTS_DIR, NOWCAST_FALLBACK_DIR]
     predictions_path = None
@@ -135,141 +159,143 @@ page = st.sidebar.radio("Ընտրեք բաժինը", [
 
 if page == "ՀՆԱ nowcasting":
     st.title("Հայաստանի Հանրապետության ՀՆԱ-ի Nowcasting")
+    nowcast_section = st.radio(
+        "Ընտրեք nowcasting բաժնի էջը",
+        ["Գլխավոր էջ", "Մոդելների վերլուծություն"],
+        horizontal=True,
+        key="nowcast_section",
+    )
 
-    future_forecast = load_future_forecast()
-    recent_actuals = load_recent_actual_quarters()
-    if future_forecast is not None and not future_forecast.empty:
-        st.markdown(
-            """
-            <div style="background:rgba(46,160,67,0.14); border-left:4px solid #2ea043; padding:14px 18px; border-radius:10px; margin:8px 0 18px 0;">
-            <strong>2026թ. Q2-Q4 ՀՆԱ-ի առաջընթաց կանխատեսում.</strong> Այս բաժինը ներկայացնում է 2026թ. առաջին եռամսյակի տեղեկատվական փաթեթի հիման վրա ստացված եռամսյակային կանխատեսումները։
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-        forecast_metric_cols = st.columns(len(future_forecast))
-        for idx, (_, row) in enumerate(future_forecast.iterrows()):
-            forecast_metric_cols[idx].metric(
-                row["target_quarter"],
-                f"{row['forecast']:.2f}",
-                f"50% միջակայք՝ {row['interval_lo_50']:.2f} – {row['interval_hi_50']:.2f}",
+    if nowcast_section == "Գլխավոր էջ":
+        future_forecast = load_future_forecast()
+        recent_actuals = load_recent_actual_quarters()
+        if future_forecast is not None and not future_forecast.empty:
+            st.markdown(
+                """
+                <div style="background:rgba(46,160,67,0.14); border-left:4px solid #2ea043; padding:14px 18px; border-radius:10px; margin:8px 0 18px 0;">
+                <strong>2026թ. Q2-Q4 ՀՆԱ-ի առաջընթաց կանխատեսում.</strong> Այս բաժինը ներկայացնում է 2026թ. առաջին եռամսյակի տեղեկատվական փաթեթի հիման վրա ստացված եռամսյակային կանխատեսումները։
+                </div>
+                """,
+                unsafe_allow_html=True,
             )
 
-        last_observed_label = "2026-Q1"
-        if pd.notna(future_forecast.iloc[0]["last_observed_quarter"]):
-            last_observed_label = future_forecast.iloc[0]["last_observed_quarter"].strftime("%Y-%m-%d")
-        st.caption(
-            f"Ընտրված մոդել՝ {future_forecast.iloc[0]['selected_model']}. "
-            f"Կանխատեսումն իրականացվել է մինչև {last_observed_label} հասանելի տվյալներով։"
-        )
+            forecast_metric_cols = st.columns(len(future_forecast))
+            for idx, (_, row) in enumerate(future_forecast.iterrows()):
+                forecast_metric_cols[idx].metric(
+                    row["target_quarter"],
+                    f"{row['forecast']:.2f}",
+                    f"50% միջակայք՝ {row['interval_lo_50']:.2f} – {row['interval_hi_50']:.2f}",
+                )
 
-        forecast_table = future_forecast.copy()
-        forecast_table["Կանխատեսում"] = forecast_table["forecast"].map(lambda x: f"{x:.3f}")
-        forecast_table["50% միջակայք"] = forecast_table.apply(
-            lambda row: f"{row['interval_lo_50']:.3f} - {row['interval_hi_50']:.3f}", axis=1
-        )
-        forecast_table["90% միջակայք"] = forecast_table.apply(
-            lambda row: f"{row['interval_lo_90']:.3f} - {row['interval_hi_90']:.3f}", axis=1
-        )
-        st.dataframe(
-            forecast_table[["target_quarter", "Կանխատեսում", "50% միջակայք", "90% միջակայք"]],
-            use_container_width=True,
-            hide_index=True,
-        )
+            forecast_table = future_forecast.copy()
+            forecast_table["Կանխատեսում"] = forecast_table["forecast"].map(lambda x: f"{x:.3f}")
+            forecast_table["50% միջակայք"] = forecast_table.apply(
+                lambda row: f"{row['interval_lo_50']:.3f} - {row['interval_hi_50']:.3f}", axis=1
+            )
+            forecast_table["90% միջակայք"] = forecast_table.apply(
+                lambda row: f"{row['interval_lo_90']:.3f} - {row['interval_hi_90']:.3f}", axis=1
+            )
+            st.dataframe(
+                forecast_table[["target_quarter", "Կանխատեսում", "50% միջակայք", "90% միջակայք"]],
+                use_container_width=True,
+                hide_index=True,
+            )
 
-        forecast_chart = go.Figure()
-        if recent_actuals is not None and not recent_actuals.empty:
+            forecast_chart = go.Figure()
+            if recent_actuals is not None and not recent_actuals.empty:
+                forecast_chart.add_trace(
+                    go.Scatter(
+                        x=recent_actuals["target_quarter"],
+                        y=recent_actuals["actual"],
+                        mode="lines+markers+text",
+                        name="Փաստացի ՀՆԱ",
+                        line=dict(color="#c9d1d9", width=3),
+                        marker=dict(size=9, color="#c9d1d9"),
+                        text=[f"{value:.1f}" for value in recent_actuals["actual"]],
+                        textposition="top center",
+                    )
+                )
             forecast_chart.add_trace(
                 go.Scatter(
-                    x=recent_actuals["target_quarter"],
-                    y=recent_actuals["actual"],
+                    x=future_forecast["target_quarter"],
+                    y=future_forecast["interval_hi_90"],
+                    mode="lines",
+                    line=dict(width=0),
+                    hoverinfo="skip",
+                    showlegend=False,
+                    name="90% միջակայք",
+                )
+            )
+            forecast_chart.add_trace(
+                go.Scatter(
+                    x=future_forecast["target_quarter"],
+                    y=future_forecast["interval_lo_90"],
+                    mode="lines",
+                    line=dict(width=0),
+                    fill="tonexty",
+                    fillcolor="rgba(88,166,255,0.14)",
+                    hoverinfo="skip",
+                    name="90% միջակայք",
+                )
+            )
+            forecast_chart.add_trace(
+                go.Scatter(
+                    x=future_forecast["target_quarter"],
+                    y=future_forecast["interval_hi_50"],
+                    mode="lines",
+                    line=dict(width=0),
+                    hoverinfo="skip",
+                    showlegend=False,
+                    name="50% միջակայք",
+                )
+            )
+            forecast_chart.add_trace(
+                go.Scatter(
+                    x=future_forecast["target_quarter"],
+                    y=future_forecast["interval_lo_50"],
+                    mode="lines",
+                    line=dict(width=0),
+                    fill="tonexty",
+                    fillcolor="rgba(46,160,67,0.24)",
+                    hoverinfo="skip",
+                    name="50% միջակայք",
+                )
+            )
+            forecast_chart.add_trace(
+                go.Scatter(
+                    x=future_forecast["target_quarter"],
+                    y=future_forecast["forecast"],
                     mode="lines+markers+text",
-                    name="Փաստացի ՀՆԱ",
-                    line=dict(color="#c9d1d9", width=3),
-                    marker=dict(size=9, color="#c9d1d9"),
-                    text=[f"{value:.1f}" for value in recent_actuals["actual"]],
+                    name="Կանխատեսված ՀՆԱ",
+                    line=dict(color="#f2cc60", width=4),
+                    marker=dict(size=11, color="#f2cc60"),
+                    text=[f"{value:.2f}" for value in future_forecast["forecast"]],
                     textposition="top center",
                 )
             )
-        forecast_chart.add_trace(
-            go.Scatter(
-                x=future_forecast["target_quarter"],
-                y=future_forecast["interval_hi_90"],
-                mode="lines",
-                line=dict(width=0),
-                hoverinfo="skip",
-                showlegend=False,
-                name="90% միջակայք",
-            )
-        )
-        forecast_chart.add_trace(
-            go.Scatter(
-                x=future_forecast["target_quarter"],
-                y=future_forecast["interval_lo_90"],
-                mode="lines",
-                line=dict(width=0),
-                fill="tonexty",
-                fillcolor="rgba(88,166,255,0.14)",
-                hoverinfo="skip",
-                name="90% միջակայք",
-            )
-        )
-        forecast_chart.add_trace(
-            go.Scatter(
-                x=future_forecast["target_quarter"],
-                y=future_forecast["interval_hi_50"],
-                mode="lines",
-                line=dict(width=0),
-                hoverinfo="skip",
-                showlegend=False,
-                name="50% միջակայք",
-            )
-        )
-        forecast_chart.add_trace(
-            go.Scatter(
-                x=future_forecast["target_quarter"],
-                y=future_forecast["interval_lo_50"],
-                mode="lines",
-                line=dict(width=0),
-                fill="tonexty",
-                fillcolor="rgba(46,160,67,0.24)",
-                hoverinfo="skip",
-                name="50% միջակայք",
-            )
-        )
-        forecast_chart.add_trace(
-            go.Scatter(
-                x=future_forecast["target_quarter"],
-                y=future_forecast["forecast"],
-                mode="lines+markers+text",
-                name="Կանխատեսված ՀՆԱ",
-                line=dict(color="#f2cc60", width=4),
-                marker=dict(size=11, color="#f2cc60"),
-                text=[f"{value:.2f}" for value in future_forecast["forecast"]],
-                textposition="top center",
-            )
-        )
-        if recent_actuals is not None and not recent_actuals.empty:
-            last_actual = recent_actuals.iloc[-1]
-            forecast_chart.add_trace(
-                go.Scatter(
-                    x=[last_actual["target_quarter"]] + future_forecast["target_quarter"].tolist(),
-                    y=[last_actual["actual"]] + future_forecast["forecast"].tolist(),
-                    mode="lines",
-                    line=dict(color="#f2cc60", width=4),
-                    hoverinfo="skip",
-                    showlegend=False,
+            if recent_actuals is not None and not recent_actuals.empty:
+                last_actual = recent_actuals.iloc[-1]
+                forecast_chart.add_trace(
+                    go.Scatter(
+                        x=[last_actual["target_quarter"]] + future_forecast["target_quarter"].tolist(),
+                        y=[last_actual["actual"]] + future_forecast["forecast"].tolist(),
+                        mode="lines",
+                        line=dict(color="#f2cc60", width=4),
+                        hoverinfo="skip",
+                        showlegend=False,
+                    )
                 )
+            forecast_chart.update_layout(
+                title="2026թ. եռամսյակային ՀՆԱ-ի կանխատեսման ուղեգիծ",
+                xaxis_title="Եռամսյակ",
+                yaxis_title="ՀՆԱ YoY ինդեքս",
             )
-        forecast_chart.update_layout(
-            title="2026թ. եռամսյակային ՀՆԱ-ի կանխատեսման ուղեգիծ",
-            xaxis_title="Եռամսյակ",
-            yaxis_title="ՀՆԱ YoY ինդեքս",
-        )
-        st.plotly_chart(S(forecast_chart, h=460), use_container_width=True)
+            st.plotly_chart(S(forecast_chart, h=460), use_container_width=True)
+
+        st.stop()
 
     summary, predictions = load_nowcasting_results()
+    ablation_summary, ablation_dm = load_google_ablation()
     if summary is None or predictions is None:
         st.error("Nowcasting արդյունքները չեն գտնվել։ Սպասվում են `nowcasting_results/backtest_summary.csv` և `nowcasting_results/backtest_predictions.csv` ֆայլերը։")
     else:
@@ -313,6 +339,19 @@ if page == "ՀՆԱ nowcasting":
         early_winner = best_by_stage[best_by_stage["stage"] == "Early"].iloc[0]
         mid_winner = best_by_stage[best_by_stage["stage"] == "Mid"].iloc[0]
         late_winner = best_by_stage[best_by_stage["stage"] == "Late"].iloc[0]
+        if mid_winner["model"] == late_winner["model"]:
+            mid_late_summary = (
+                f"<strong>միջին</strong> և <strong>ուշ փուլերում</strong> առաջատար է "
+                f"<strong>{mid_winner['model']}</strong>-ը համապատասխանաբար "
+                f"<strong>{mid_winner['mape']:.2f}%</strong> և <strong>{late_winner['mape']:.2f}%</strong> MAPE-ով։"
+            )
+        else:
+            mid_late_summary = (
+                f"<strong>միջին փուլում</strong> առաջատար է <strong>{mid_winner['model']}</strong>-ը "
+                f"(<strong>{mid_winner['mape']:.2f}%</strong> MAPE), իսկ "
+                f"<strong>ուշ փուլում</strong>՝ <strong>{late_winner['model']}</strong>-ը "
+                f"(<strong>{late_winner['mape']:.2f}%</strong> MAPE)։"
+            )
 
         metric_cols = st.columns(4)
         metric_cols[0].metric("Լավագույն գործառնական մոդել", overall_winner["model"], f"MAPE {overall_winner['avg_mape']:.2f}%")
@@ -325,8 +364,7 @@ if page == "ՀՆԱ nowcasting":
             <strong>Արդյունքների համառոտ բացատրություն.</strong> Backtest արդյունքներով <strong>{overall_winner['model']}</strong>-ը լավագույն գործառնական մոդելն է,
             քանի որ այն հասանելի է բոլոր երեք փուլերում և ունի <strong>{overall_winner['avg_mape']:.2f}%</strong> միջին MAPE։
             <strong>Վաղ փուլում</strong> լավագույն արդյունքը գրանցել է <strong>{early_winner['model']}</strong>-ը ({early_winner['mape']:.2f}%),
-            մինչդեռ <strong>միջին</strong> և <strong>ուշ փուլերում</strong> առաջատար է <strong>{mid_winner['model']}</strong>-ը
-            համապատասխանաբար <strong>{mid_winner['mape']:.2f}%</strong> և <strong>{late_winner['mape']:.2f}%</strong> MAPE-ով։
+            իսկ {mid_late_summary}
             <strong>DFM</strong>-ը պահպանվում է որպես կառուցվածքային benchmark, սակայն դրա սխալը ավելի բարձր է
             ({dfm_summary.loc['Early', 'mape']:.2f}%, {dfm_summary.loc['Mid', 'mape']:.2f}%, {dfm_summary.loc['Late', 'mape']:.2f}%),
             ուստի գործառնական կիրառման համար նախընտրելի է ensemble մոտեցումը։
@@ -334,6 +372,60 @@ if page == "ՀՆԱ nowcasting":
             """,
             unsafe_allow_html=True,
         )
+
+        if ablation_summary is not None and not ablation_summary.empty:
+            early_ablation = (
+                ablation_summary[ablation_summary["stage"] == "Early"]
+                .copy()
+                .sort_values("mape")
+                .reset_index(drop=True)
+            )
+            dm_pair = ablation_dm[
+                (ablation_dm["stage"] == "Early")
+                & (
+                    ((ablation_dm["model_a"] == "Base+Market") & (ablation_dm["model_b"] == "Base+Market+Google"))
+                    | ((ablation_dm["model_a"] == "Base+Market+Google") & (ablation_dm["model_b"] == "Base+Market"))
+                )
+            ]
+            dm_p_value = None if dm_pair.empty else float(dm_pair.iloc[0]["p_value"])
+            market_mape = float(early_ablation.loc[early_ablation["model"] == "Base+Market", "mape"].iloc[0])
+            full_mape = float(early_ablation.loc[early_ablation["model"] == "Base+Market+Google", "mape"].iloc[0])
+            google_gain = market_mape - full_mape
+
+            st.markdown("### Այլընտրանքային տվյալների աբլացիոն թեստ")
+            ablation_table = early_ablation.copy()
+            ablation_table["Տեղեկատվական բլոկ"] = ablation_table["model"].replace(
+                {
+                    "Base": "Բազային մոդել",
+                    "Base+Google": "Բազային + Google կոմպոզիտներ",
+                    "Base+Market": "Բազային + շուկայական արագ փոփոխականներ",
+                    "Base+Market+Google": "Բազային + շուկայական + Google կոմպոզիտներ",
+                }
+            )
+            ablation_table["MAPE"] = ablation_table["mape"].map(lambda x: f"{x:.3f}%")
+            ablation_table["RMSE"] = ablation_table["rmse"].map(lambda x: f"{x:.3f}")
+            st.dataframe(
+                ablation_table[["Տեղեկատվական բլոկ", "MAPE", "RMSE"]],
+                use_container_width=True,
+                hide_index=True,
+            )
+
+            dm_text = "n/a" if dm_p_value is None else f"{dm_p_value:.3f}"
+            st.markdown(
+                f"""
+                <div style="background:rgba(46,160,67,0.10); border-left:4px solid #2ea043; padding:14px 18px; border-radius:10px; margin:4px 0 18px 0;">
+                <strong>Թարմացված մեկնաբանություն.</strong> Թարմացված <em>Early</em> աբլացիոն թեստում
+                շուկայական արագ բլոկը զգալիորեն բարելավում է բազային կառուցվածքային մոդելը,
+                իսկ Google կոմպոզիտների ավելացումը դրա վրա տալիս է միայն փոքր լրացուցիչ շահույթ`
+                <strong>{google_gain:.3f}</strong> MAPE տոկոսային կետ։
+                Այդ ազդեցությունը դեռ վիճակագրորեն վճռական չէ, քանի որ Diebold-Mariano թեստի
+                <strong>p = {dm_text}</strong>։
+                Այսինքն` այլընտրանքային տվյալների պատմությունը դարձել է մի փոքր ավելի ուժեղ,
+                բայց այն շարունակում է մնալ շերտավորված լրացում, ոչ թե որոշիչ հիմնական ազդակ։
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
 
         col1, col2 = st.columns([1.2, 1])
         with col1:
@@ -896,7 +988,7 @@ elif page == "Արտաքին առևտրաշրջանառություն":
     with c2:
         st.subheader("Հիմնական շեշտադրումներ")
         st.write(f"""
-        - **2025թ. հունվարին** արտահանումը կազմել է **{df_trade[df_trade['Կատեգորիա']=='Արտահանում']['2025_Հունվար'].values[0]} մլն USD**:
+        - **2025թ.** արտահանումը կազմել է **{df_trade[df_trade['Կատեգորիա']=='Արտահանում']['2025_Հունվար'].values[0]} մլն USD**:
         - **Առևտրային հաշվեկշիռը** շարունակում է մնալ բացասական, սակայն արտահանման աճի տեմպերը որոշակի ժամանակահատվածներում գերազանցում են ներմուծմանը։
         - **Ռուսաստանը, ԱՄԷ-ն և Չինաստանը** մնում են հիմնական գործընկերները:
         - Ավելացել է թանկարժեք քարերի և մետաղների մասնաբաժինը արտահանման կառուցվածքում։
