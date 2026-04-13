@@ -84,7 +84,7 @@ def load_google_ablation():
     for frame in [ablation_summary, ablation_dm]:
         for column in frame.columns:
             if column not in {"model", "stage", "loss", "model_a", "model_b", "better_model"}:
-                frame[column] = pd.to_numeric(frame[column], errors="ignore")
+                frame[column] = pd.to_numeric(frame[column], errors="coerce")
     return ablation_summary, ablation_dm
 
 @st.cache_data
