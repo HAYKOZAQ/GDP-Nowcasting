@@ -297,7 +297,7 @@ if page == "ՀՆԱ nowcasting":
     elif nowcast_section == "Գծապատկերներ":
         import os as _os
         _FIG_DIR = _os.path.join(BASE_DIR, "nowcasting_results", "figures")
-        _FALLBACK = _os.path.join(_os.path.dirname(BASE_DIR), "nowcasting_results", "figures")
+        _FALLBACK = _os.path.join(BASE_DIR, "figures1")
         _fig_dir = _FIG_DIR if _os.path.isdir(_FIG_DIR) else (_FALLBACK if _os.path.isdir(_FALLBACK) else None)
         st.markdown(
             "<div style='background:rgba(31,111,235,0.13);border-left:4px solid #58a6ff;"
