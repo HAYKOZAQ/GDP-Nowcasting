@@ -1,0 +1,1582 @@
+
+\documentclass[12pt,a4paper]{report}
+
+\usepackage{iftex}
+\ifLuaTeX
+  \usepackage{fontspec}
+  \usepackage{polyglossia}
+  \setmainlanguage{english}
+  \setotherlanguages{armenian,russian}
+  \defaultfontfeatures{Ligatures=TeX}
+  \setmainfont{Times New Roman}
+  \setsansfont{Arial}
+  \newfontfamily\armenianfont[Script=Armenian]{Sylfaen}
+  \newfontfamily\armenianfontsf[Script=Armenian]{Sylfaen}
+  \newfontfamily\armenianfonttt[Script=Armenian]{Sylfaen}
+  \newfontfamily\armenianfrontfont[Script=Armenian]{Arial}
+  \newfontfamily\russianfont{Times New Roman}
+\else
+  \errmessage{This combined thesis file must be compiled with LuaLaTeX}
+\fi
+
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage{setspace}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{bm}
+\usepackage[numbers]{natbib}
+\usepackage[hidelinks]{hyperref}
+\usepackage{xurl}
+\usepackage{caption}
+\usepackage{tocloft}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{microtype}
+
+\geometry{
+  a4paper,
+  left=30mm,
+  right=15mm,
+  top=20mm,
+  bottom=25mm
+}
+\setlength{\parindent}{1cm}
+
+\onehalfspacing
+\hypersetup{
+  hidelinks,
+  colorlinks=false,
+  pdfborder={0 0 0},
+  linkbordercolor={1 1 1},
+  citebordercolor={1 1 1},
+  urlbordercolor={1 1 1},
+  filebordercolor={1 1 1}
+}
+\graphicspath{{../}{../figures/}{../results/figures/}{../results/forecasts/}{figures/}}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\renewcommand{\arraystretch}{1.12}
+\renewcommand{\contentsname}{CONTENTS}
+\setlength{\cftbeforetoctitleskip}{-0.35cm}
+\setlength{\cftaftertoctitleskip}{0.45cm}
+\setlength{\cftbeforechapskip}{2pt}
+
+\usepackage{titlesec}
+\titleformat{\chapter}[block]
+  {\normalfont\Large\bfseries\centering}
+  {\thechapter.}
+  {1em}
+  {\MakeUppercase}
+
+\begin{document}
+
+        \hypersetup{pageanchor=false}
+
+        \begin{titlepage}
+        \begin{center}
+        {\armenianfrontfont\bfseries\Large \MakeUppercase{ԵՐԵՎԱՆԻ ՊԵՏԱԿԱՆ ՀԱՄԱԼՍԱՐԱՆ}\par}
+        \vspace{0.6cm}
+        {\armenianfrontfont\bfseries\Large \MakeUppercase{ՄԱԹԵՄԱՏԻԿԱՅԻ ԵՎ ՄԵԽԱՆԻԿԱՅԻ ՖԱԿՈՒԼՏԵՏ}\par}
+        \vspace{1.4cm}
+        {\armenianfrontfont\bfseries\Large ՀԱՎԱՆԱԿԱՆՈՒԹՅՈՒՆՆԵՐԻ ՏԵՍՈՒԹՅԱՆ ԵՎ ՄԱԹԵՄԱՏԻԿԱԿԱՆ ՎԻՃԱԿԱԳՐՈՒԹՅԱՆ ԱՄԲԻՈՆ\par}
+        \vspace{1.8cm}
+        {\armenianfrontfont\bfseries\Large \MakeUppercase{ԿԻՐԱՌԱԿԱՆ ՎԻՃԱԿԱԳՐՈՒԹՅՈՒՆ ԵՎ ՏՎՅԱԼՆԵՐԻ ԳԻՏՈՒԹՅՈՒՆ ԿՐԹԱԿԱՆ ԾՐԱԳԻՐ}\par}
+        \vspace{2.1cm}
+        {\armenianfrontfont\bfseries\Large ԶԱՔԱՐՅԱՆ ՀԱՅԿ ԱՐՄԵՆԻ\par}
+        \vspace{1.5cm}
+        {\armenianfrontfont\bfseries\LARGE ՄԱԳԻՍՏՐՈՍԱԿԱՆ ԹԵԶ\par}
+        \vspace{1.5cm}
+        {\armenianfrontfont\bfseries\Large ՀՆԱ աճի կանխատեսում՝ օգտագործելով այլընտրանքային տվյալների աղբյուրներ\par}
+        \vspace{1.4cm}
+        {\armenianfrontfont\bfseries\large «Վիճակագրություն» մասնագիտությամբ առկա մագիստրոսի որակավորման աստիճանի հայցման համար\par}
+        \vfill
+        {\armenianfrontfont\bfseries\Large ԵՐԵՎԱՆ 2026\par}
+        \end{center}
+        \end{titlepage}
+
+        \begin{titlepage}
+        \begin{center}
+        {\sffamily\bfseries\Large YEREVAN STATE UNIVERSITY\par}
+        \vspace{0.6cm}
+        {\sffamily\bfseries\Large FACULTY OF MATHEMATICS AND MECHANICS\par}
+        \vspace{1.4cm}
+        {\sffamily\bfseries\Large DEPARTMENT OF PROBABILITY THEORY AND MATHEMATICAL STATISTICS\par}
+        \vspace{1.8cm}
+        {\sffamily\bfseries\Large APPLIED STATISTICS AND DATA SCIENCE MASTER'S PROGRAM\par}
+        \vspace{2.1cm}
+        {\sffamily\bfseries\Large ZAKARYAN HAYK ARMEN\par}
+        \vspace{1.5cm}
+        {\sffamily\bfseries\LARGE MASTER'S THESIS\par}
+        \vspace{1.5cm}
+        {\sffamily\bfseries\Large Nowcasting GDP Growth Using Alternative Data Sources\par}
+        \vspace{1.4cm}
+        {\sffamily\bfseries\large Submitted in Partial Fulfillment of the Requirements for the Full-time Degree of Master of Statistics\par}
+        \vfill
+        {\sffamily\bfseries\Large YEREVAN 2026\par}
+        \end{center}
+        \end{titlepage}
+
+        \clearpage
+        \thispagestyle{empty}
+        \vspace*{1.3cm}
+
+        \noindent {\armenianfrontfont\bfseries Ուսանող՝}\hfill
+        \begin{tabular}[t]{c}
+        \rule{9.0cm}{0.4pt} \\[-0.1cm]
+        \footnotesize\textarmenian{ստորագրություն}
+        \end{tabular} \vspace{0.8cm}
+
+        \begin{center}
+        \begin{tabular}{c}
+        {\armenianfrontfont\bfseries Զաքարյան Հայկ} \\[-0.1cm]
+        \rule{15.0cm}{0.4pt} \\[-0.1cm]
+        \footnotesize\textarmenian{ազգանուն, անուն}
+        \end{tabular}
+        \end{center} \vspace{1.2cm}
+
+        \noindent {\armenianfrontfont\bfseries Գիտական ղեկավար՝}\hfill
+        \begin{tabular}[t]{c}
+        \rule{9.0cm}{0.4pt} \\[-0.1cm]
+        \footnotesize\textarmenian{ստորագրություն}
+        \end{tabular} \vspace{0.8cm}
+
+        \begin{center}
+        \begin{tabular}{c}
+        {\armenianfrontfont\bfseries Դասախոս, Հարությունյան Արշալույս} \\[-0.1cm]
+        \rule{15.0cm}{0.4pt} \\[-0.1cm]
+        \footnotesize\textarmenian{գիտ. աստիճան, կոչում, ազգանուն, անուն}
+        \end{tabular}
+        \end{center} \vspace{1.0cm}
+
+        \vspace{2.2cm}
+        \noindent {\armenianfrontfont\bfseries «Թույլատրել պաշտպանության»}\\[1.3cm]
+
+        \noindent {\armenianfrontfont\bfseries Մագիստրոսական կրթական ծրագրի ղեկավար՝}\\[0.2cm]
+        \begin{flushright}
+        {\armenianfrontfont\bfseries ֆ.մ.գ.դ., ասիստենտ Կարեն Քեռյան}
+        \end{flushright}
+
+        \vfill
+        \noindent \textarmenian{<<\hspace{1cm}>> մայիսի 2026թ.}
+
+        \clearpage
+        \setcounter{page}{4}
+        \phantomsection
+        \addcontentsline{toc}{chapter}{Համառոտագիր}
+        \vspace*{0.2cm}
+        {\armenianfrontfont\bfseries Թեզի վերնագիրը՝}\\[0.75cm]
+        \noindent {\armenianfrontfont\bfseries Հայերեն՝} \textarmenian{ՀՆԱ աճի կանխատեսում՝ օգտագործելով այլընտրանքային տվյալների աղբյուրներ},\\[0.35cm]
+        \noindent {\armenianfrontfont\bfseries Ռուսերեն՝} \textrussian{Прогнозирование роста ВВП с использованием альтернативных источников данных},\\[0.35cm]
+        \noindent {\armenianfrontfont\bfseries Անգլերեն՝} Nowcasting GDP Growth Using Alternative Data Sources\\[1.05cm]
+
+        \begin{center}
+        {\armenianfrontfont\bfseries Համառոտագիր}
+        \end{center}
+        \begin{armenian}
+        \begin{spacing}{0.98}
+        \small
+        \sloppy
+        Աշխատությունը նվիրված է Հայաստանի ընթացիկ եռամսյակի ՀՆԱ աճի գնահատմանը մինչև պաշտոնական ազգային հաշիվների հրապարակումը։ Թեզում համադրվում են ավանդական մակրոտնտեսական ցուցանիշները և այլընտրանքային տվյալների աղբյուրները՝ փոխարժեքների, ապրանքային գների, որոնողական ակտիվության, տրանսֆերտների, զբոսաշրջության և ամսական ոլորտային ցուցանիշների տեսքով։ Այս մոտեցումը կարևոր է Հայաստանի նման փոքր և արտաքին շոկերի նկատմամբ զգայուն տնտեսության համար, որտեղ շրջադարձային փոփոխությունները հաճախ առաջինը երևում են բարձր հաճախականության տվյալներում։
+
+Աշխատության շրջանակում կառուցվել է փուլային nowcasting համակարգ, որը տարբերակում է Early, Mid և Late տեղեկատվական փուլերը։ Ցույց է տրվում, որ այլընտրանքային տվյալների նշանակությունը հատկապես մեծ է եռամսյակի սկզբում, երբ պաշտոնական նույն եռամսյակի տեղեկությունը սահմանափակ է։ Տեղեկատվական դաշտի հարստացման հետ առավել արդյունավետ են դառնում ադապտիվ համակցված մոդելները, իսկ շոկային ճշգրտմամբ տարբերակները բարելավում են արդյունքները ճգնաժամային եռամսյակներում։
+
+Արդյունքները ցույց են տալիս, որ Հայաստանը 2025 թվական է մտել հարաբերականորեն կայուն աճի իներցիայով, սակայն աճի կառուցվածքը դարձել է ավելի անհավասարաչափ։ Շինարարությունը և անշարժ գույքի հետ կապված ակտիվությունը պահպանել են առանցքային դերը, ՏՀՏ ոլորտը շարունակել է ունենալ ռազմավարական նշանակություն, իսկ հարկաբյուջետային և ֆինանսական կենտրոնացման ռիսկերը դարձել են ավելի տեսանելի։ Ընդհանուր եզրակացությունն այն է, որ կարճաժամկետ բարենպաստ հեռանկարը կայուն կմնա միայն այն դեպքում, եթե արագ հատվածային աճը ուղեկցվի արտադրողականության բարձրացմամբ, կարգապահ մակրոտնտեսական քաղաքականությամբ և պահանջարկի կառուցվածքային վերաբալանսավորմամբ։
+        \par
+        \end{spacing}
+        \end{armenian}
+        \clearpage
+        \phantomsection
+        \addcontentsline{toc}{chapter}{Abstract}
+        \vspace*{0.2cm}
+
+        \begin{center}
+        {\sffamily\bfseries Abstract}
+        \end{center}
+        \begin{english}
+        \begin{spacing}{0.98}
+        \small
+        \sloppy
+        This thesis examines how Armenia's current-quarter GDP can be assessed before the publication of official national accounts by combining conventional macroeconomic indicators with alternative data sources. The problem is economically important because Armenia is a small, shock-sensitive open economy in which quarterly GDP is published with a delay, while turning points often emerge first in higher-frequency signals such as exchange rates, commodity prices, search intensity, remittance dynamics, tourism flows, and monthly sector indicators. Against that background, the study develops a GDP nowcasting and high-frequency monitoring framework designed to evaluate how Armenia's post-2022 growth pattern evolved through 2024--2026 Q1 and whether that expansion reflected a durable structural shift or a more temporary, shock-driven adjustment.
+
+The analysis uses monthly and quarterly indicators covering commodity markets, tourism, remittances, economic activity, sectoral output, labor-market conditions, inflation, fiscal developments, and banking exposure. Rather than treating the dashboard as a collection of unrelated charts, the thesis organizes these indicators into a coherent interpretation of growth drivers, transmission channels, and macroeconomic vulnerabilities. It also introduces a stage-based nowcasting framework in which alternative data are especially valuable at the beginning of the quarter, when official same-quarter releases are still limited.
+
+The results suggest that Armenia remained resilient into 2026 Q1, but the composition of growth became increasingly uneven. Construction and urban real estate remained dominant, ICT retained strategic importance, labor-market conditions tightened, and fiscal as well as financial concentration risks became more visible. In the refreshed nowcasting benchmark, \texttt{StackingNowcast} is the strongest operational model across \textit{Early}, \textit{Mid}, and \textit{Late} stages on average, while targeted shock-adjusted specifications remain necessary for extreme month-1 crisis quarters such as 2020 Q2 Early. A separate forward projection for 2026 Q2--Q4 indicates moderate deceleration rather than collapse, with GDP growth stabilizing near the 104--105 range of the year-on-year index. Overall, the thesis concludes that Armenia's near-term outlook remains favorable only if rapid sectoral expansion is matched by stronger productivity growth, disciplined macroeconomic management, and a gradual rebalancing away from excessive dependence on construction-led demand.
+
+        This topic is of critical importance for policymakers and econometricians, as it provides a robust framework to generate timely, high-frequency signals of economic activity before official national accounts are published, enabling more responsive, proactive, and data-driven policy decisions.
+        \par
+        \end{spacing}
+        \end{english}
+        \clearpage
+        \tableofcontents
+
+        \clearpage
+        \hypersetup{pageanchor=true}
+\chapter{Introduction}
+\section{Research Motivation}
+Armenia is a small open economy exposed to external shocks, migration flows, commodity price cycles, and regional geopolitical instability. In such an environment, annual national accounts alone are not sufficient for timely economic interpretation. Policymakers, firms, and researchers need high-frequency signals that reveal whether growth is broad-based, whether inflationary or financial pressures are building, and whether labor and external-sector dynamics are improving or weakening.
+
+The Armenian case is especially important because the rapid expansion observed after 2022 contained both temporary and structural elements. Temporary factors included migration-related inflows, remittance surges, and abrupt trade re-routing. Structural factors included the scaling of the ICT sector, shifts in tourism composition, and a prolonged construction boom. The central analytical challenge is to distinguish normalization from deterioration and structural change from cyclical noise.
+
+\section{Research Question and Objectives}
+This thesis addresses the following main research question:
+
+\begin{quote}
+What are the main short-run drivers of Armenian economic growth through 2026 Q1, and to what extent can high-frequency indicators nowcast changes in growth, labor-market conditions, and macroeconomic stability while supporting short-horizon forecasts for the remaining quarters of 2026?
+\end{quote}
+
+The study has four objectives:
+\begin{enumerate}
+    \item to build an integrated high-frequency view of the Armenian economy using the dashboard indicators;
+    \item to identify the sectors and channels that contributed most to growth normalization through 2026 Q1;
+    \item to assess whether observed growth was balanced across the real, external, labor, fiscal, and financial sectors;
+    \item to evaluate the main macroeconomic risks associated with Armenia's current growth model.
+\end{enumerate}
+
+\section{Contribution}
+The contribution of the thesis is practical as well as analytical. Practically, it consolidates a fragmented set of official and market indicators into a single dashboard-oriented framework. Analytically, it moves beyond descriptive chart presentation by linking the indicators to an explicit macroeconomic narrative: external shocks affect Armenia through commodity prices, trade, remittances, and exchange rates; these channels influence domestic production, employment, wages, and prices; and the resulting growth pattern shapes fiscal and banking-system exposure.
+
+More specifically, the thesis makes five distinct contributions. First, it builds an Armenia-focused monitoring system that combines quarterly macro structure, monthly official releases, and high-frequency market and search indicators in one coherent framework. Second, it organizes the empirical evidence by transmission channel rather than by isolated charts, which makes the dashboard chapters and the nowcasting chapter read as parts of the same analytical argument. Third, it shows that construction and real-estate activity were not only major contributors to recent growth, but also the clearest source of concentration risk in the broader macro-financial picture. Fourth, it develops a leakage-safe pseudo real-time nowcasting design with \textit{Early}, \textit{Mid}, and \textit{Late} information stages, so model performance is judged under the same information constraints faced by policymakers. Fifth, it evaluates the marginal role of alternative data and extends the framework into a forward projection for 2026 Q2--Q4, which makes the thesis operational as well as interpretive.
+
+In that sense, the thesis contributes not only a set of charts or model rankings, but also a disciplined interpretation of what recent Armenian growth actually represented: resilient and real, yet increasingly dependent on a narrow construction- and property-linked engine whose sustainability cannot be taken for granted.
+
+\chapter{Literature Review and Analytical Framework}
+\section{Nowcasting in Small Open Economies}
+Nowcasting refers to the estimation of current economic conditions before complete national accounts are released. In the literature, nowcasting methods typically rely on bridge equations, factor models, mixed-frequency regressions, or indicator-based composite systems. Their advantage is timeliness; their weakness is that high-frequency indicators may reflect noise, revisions, or temporary co-movement rather than stable economic relationships.
+
+The modern nowcasting literature usually begins with the ragged-edge information problem formalized by Giannone, Reichlin, and Small. Their contribution was to show that current-quarter GDP can be treated as a filtering problem in which data arrive asynchronously across the quarter rather than as a standard low-frequency forecasting exercise.\citep{Giannone2008} That distinction matters because the practical question is not only which model has the lowest average error, but also how the estimate should be revised when one more monthly release becomes available. In applied terms, nowcasting is therefore a mixed-frequency updating problem rather than just a quarterly regression problem.
+
+Within that broad framework, three methodological families dominate the literature. \textit{Bridge equations} first convert monthly indicators into quarterly summaries and then regress GDP on those aggregates. They are simple and often robust, especially when the number of useful indicators is limited. \textit{MIDAS}-style and other mixed-frequency regressions preserve more of the high-frequency timing structure, while \textit{dynamic factor models} summarize a large panel of monthly series with one or more latent factors that can be updated each time a new data release arrives.\citep{Giannone2008,Bok2017} The appeal of factor methods is that they handle many indicators and ragged-edge missingness in a unified state-space setting; the tradeoff is that they may smooth through abrupt breaks unless the model is augmented or corrected.
+
+Recent work also shows that machine-learning methods are useful but not automatically dominant in macro nowcasting. Bok et al.\ compare a wide range of linear and nonlinear models for U.S.\ GDP and show that no single class wins uniformly across all release vintages and information states.\citep{Bok2017} Kant, Pick, and de Winter reach a similar conclusion for the Netherlands: richer model classes can help, but the operational gains are often modest and sensitive to the evaluation design.\citep{NetherlandsDNB2022} This is particularly relevant for Armenia, where the quarterly sample is small. In such settings, nonlinear methods such as Random Forest and Gradient Boosting may capture interactions, but they also face a real small-sample risk of instability relative to simpler regularized or factor-based benchmarks.
+
+Alternative data add another layer to this literature. Search intensity, card payments, mobility indicators, and web activity can improve nowcasts precisely when the official monthly block is still thin, but their marginal contribution depends heavily on how they are selected, aggregated, and validated. Studies for Peru, Georgia, and the United States show that Google Trends signals can sharpen early-stage tracking when they are aligned with the relevant shock channel, yet they rarely replace the standard macro block on their own.\citep{Peru2024,Georgia2022,US2022} For a small open economy, this implies that alternative data are most valuable as incremental real-time indicators layered on top of macro structure and fast market variables, not as a stand-alone substitute for them.
+
+Another important strand of the literature concerns revision risk and model uncertainty in real time. In practical nowcasting work, the object of interest is not only the final revised GDP release but also the sequence of estimates that policymakers would have seen as new information arrived. Anesti, Galv\~{a}o, and Miranda-Agrippino show that revision uncertainty can materially affect the interpretation of apparent forecast success, especially when economic conditions are unstable and the data-generating process itself is shifting.\citep{Anesti2020} This reinforces the need to evaluate Armenian nowcasts in a pseudo real-time design rather than with a single ex-post fit over a cleaned final dataset.
+
+The literature on transition and small open economies also suggests caution in transplanting large-country methods without adjustment. The Eurasian evidence reviewed by Tsukarev et al.\ shows that model performance is highly context dependent: when the macro sample is short and the economy is exposed to large external shocks, simpler bridge-style or regularized approaches often remain competitive with more complex machine-learning systems.\citep{ArmeniaBelarus2024} That lesson matters for Armenia because its recent growth path contains structural breaks related to war, migration, trade rerouting, and financial inflows. In such an environment, the methodological question is not whether a flexible nonlinear model can fit historical patterns, but whether it can do so without producing unstable or poorly interpretable real-time revisions.
+
+Taken together, these studies imply three standards for a credible Armenian nowcasting thesis. First, the literature review should distinguish mixed-frequency structure from purely statistical fit. Second, the contribution of alternative data should be measured at the margin rather than assumed from narrative appeal alone. Third, model rankings should be interpreted as operational preferences under limited data rather than as definitive proof that one specification dominates in all environments. These standards directly shape the evaluation strategy in Chapter 9.
+
+For a small open economy such as Armenia, nowcasting is particularly useful because major turning points can emerge first in trade, remittances, migration, commodity prices, exchange rates, and sector-specific monthly indicators. However, the same openness creates identification challenges. A strong tourism month, for example, may reflect seasonality rather than structural competitiveness; construction booms may raise GDP in the short run while creating medium-term financial vulnerabilities; and large migration flows may temporarily lift consumption, labor supply, and housing demand at the same time.
+
+\section{Analytical Approach of This Thesis}
+This thesis uses a dashboard-based empirical approach rather than a purely econometric one. The argument is not that a single model can fully explain Armenia's growth path, but that a disciplined combination of high-frequency indicators can reveal the changing composition of growth. The framework follows three principles:
+\begin{enumerate}
+    \item indicators are grouped by transmission channel rather than by data source alone;
+    \item interpretation emphasizes consistency across multiple figures rather than isolated chart movements;
+    \item strong causal claims are avoided unless supported by more than one indicator.
+\end{enumerate}
+
+Accordingly, the thesis evaluates Armenia's economy through five linked channels: external conditions, real-sector activity, labor and demographics, prices and policy, and financial concentration. This structure is more appropriate for the Armenian case than a purely sectoral description because the same shock may propagate through several channels simultaneously.
+
+That dashboard structure is not separate from the nowcasting model; it is the economic map from which the nowcasting features are chosen. The external-sector chapter motivates exchange-rate, commodity-price, tourism, and remittance signals; the real-sector chapter motivates the use of the Economic Activity Index, industry, construction, and services indicators; the labor and macro-financial chapters motivate employment, wages, inflation, and credit variables. In other words, the dashboard chapters provide the economic interpretation of the same transmission channels that Chapter 9 later evaluates formally in pseudo real time.
+
+This integration is deliberate. Chapters 4--8 document which channels actually carried Armenian growth and vulnerability in the post-2022 period, while Chapter 9 asks whether those same channels improve real-time GDP tracking once they are encoded as leakage-safe features. The dashboard chapters therefore serve as empirical motivation, and the nowcasting chapter serves as formal validation. Structurally, the thesis is strongest when these two parts are read together rather than as separate projects.
+
+\chapter{Data and Methodology}
+\section{Data Sources}
+The deployed version of the dashboard is available at \href{https://haykozaq-gdp-nowcasting-dashboard-ogckd1.streamlit.app/}{\textbf{Armenian\_Economy\_Dashboard}}\footnote{\url{https://haykozaq-gdp-nowcasting-dashboard-ogckd1.streamlit.app}}. The dashboard combines monthly and quarterly indicators from the main Armenian and international statistical sources. The core domestic sources are the Statistical Committee of the Republic of Armenia (Armstat), the Central Bank of Armenia (CBA), and the Ministry of Finance. International context variables are taken from publicly available commodity and macroeconomic datasets used in IMF, World Bank, and ADB assessments. The figures included in this thesis are based on processed datasets stored in the project workspace and transformed into publication-ready visuals.\cite{armstatbank,cbaMPR2025Q1,minfinBudget,imfCR24348,wbMEU2025,adbADO2024}
+
+The indicator set covers:
+\begin{itemize}
+    \item commodity prices: oil, copper, gold, and international food prices;
+    \item external demand and inflows: tourism, remittances, trade, and exchange rates;
+    \item real activity: economic activity index, industrial output, agriculture, and construction;
+    \item labor market: employment, unemployment, labor resources, migration, and wages;
+    \item macro-financial conditions: CPI, budget revenue and expenditure, utilities, and credit composition.
+\end{itemize}
+
+\section{Time Coverage and Interpretation Rules}
+The dashboard uses the latest monthly and quarterly observations available at the time of compilation. Because some series are reported with lags and others cover only part of the year, the analysis distinguishes three types of evidence:
+\begin{enumerate}
+    \item \textbf{realized observations}, where complete official data are available;
+    \item \textbf{partial-year assessments}, where trends are inferred from year-to-date information;
+    \item \textbf{nowcast-based interpretation}, where current conditions are approximated using high-frequency indicators before full GDP release.
+\end{enumerate}
+
+This distinction is essential. A chart labeled for 2025 should not automatically be interpreted as a full-year outcome. In this thesis, figure-based analysis refers to the observation window represented in the underlying data, not to a guaranteed year-end realization.
+
+\section{Nowcasting Logic}
+The nowcasting framework is indicator-based. It does not claim to be a full structural macroeconomic model. Instead, it tracks the current state of the economy by combining signals from sectors that historically co-move with Armenian GDP and the Economic Activity Index (EAI). The logic of the framework is as follows:
+\begin{enumerate}
+    \item monthly sector indicators are normalized to allow comparison across different units;
+    \item indicators are grouped into macro blocks such as external demand, domestic activity, and labor conditions;
+    \item sector contribution charts are used to identify whether growth is broad-based or concentrated;
+    \item the nowcasted GDP path is interpreted jointly with EAI, construction, industry, tourism, and labor indicators.
+\end{enumerate}
+
+\section{Methodological Limitations}
+Several limitations should be noted at the outset. First, Armenian macroeconomic data can be revised, especially when annual totals replace monthly estimates. Second, some indicators are better interpreted as leading signals than as direct measures of output. Third, correlation does not prove causation: a sector may expand at the same time as GDP without being the dominant reason for overall growth. Fourth, migration and geopolitical shocks may create structural breaks that weaken the predictive power of historical patterns. The dashboard chapters are therefore used as a disciplined diagnostic framework rather than as a source of causal identification by themselves; the formal forecast-comparison tests are reserved for the nowcasting chapter. These limitations do not invalidate the dashboard, but they require cautious interpretation.\cite{imfCR24348,wbPulse2025}
+
+\chapter{External Sector and Global Drivers}
+\section{Commodity Markets, Terms of Trade, and Export Sensitivity}
+Armenia's external position remains sensitive to commodity prices, especially through mining exports and imported energy costs. The commodity figures therefore serve as a first filter for understanding the broader macroeconomic environment.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/00_commodities_oil_copper.png}
+    \caption{Global Market Trends: Oil and Copper Prices (2025)}
+    \label{fig:oil_copper}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/01_commodities_gold.png}
+    \caption{Gold Price Volatility and its Impact on Armenian Export Portfolios}
+    \label{fig:gold_prices}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/02_commodities_food_intl.png}
+    \caption{International Food Price Index Trends}
+    \label{fig:food_prices}
+\end{figure}
+
+Figures \ref{fig:oil_copper}--\ref{fig:food_prices} indicate why Armenia's growth outlook cannot be interpreted through domestic indicators alone. Higher gold prices support export earnings and can partially cushion weaker mining volumes, but this effect is not equivalent to a broad improvement in industrial competitiveness. Copper dynamics matter not only for mining revenues but also for Armenia's exposure to external demand conditions. International food price moderation, by contrast, supports lower imported inflation and creates room for more stable domestic price expectations. The analytical implication is that Armenia may simultaneously benefit from favorable external price conditions while remaining structurally dependent on a narrow set of export-linked variables.\cite{wbMEU2024,imfCR24348}
+
+\section{Tourism and the Recomposition of Service Exports}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/03_tourism_total.png}
+    \caption{Total Tourist Arrivals: Monthly Comparison (2024 vs 2025)}
+    \label{fig:tourism_total}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/04_tourism_growth_dest.png}
+    \caption{Tourism Growth by Visitor Destination and Origin}
+    \label{fig:tourism_dest}
+\end{figure}
+
+Tourism is one of the clearest examples of why composition matters as much as scale. Figure \ref{fig:tourism_total} shows whether total flows remained resilient, while Figure \ref{fig:tourism_dest} provides the more important analytical signal: the origin structure of visitors. If growth is increasingly supported by a more diversified set of markets, then tourism earnings become less vulnerable to a single regional shock. That would represent a genuine structural improvement. If, however, the sector merely stabilizes after an earlier relocation-driven surge, then the interpretation should be normalization rather than sustained acceleration. The thesis therefore treats tourism as a channel of service-export resilience, but not as sufficient evidence of a permanently stronger growth regime on its own.\cite{armstatbank,wbTourism2025}
+
+\section{Remittances, Exchange Rates, and External Liquidity}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/05_remittances_monthly_io.png}
+    \caption{Remittance Inflows and Outflows (Monthly)}
+    \label{fig:remittances_io}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/06_remittances_net.png}
+    \caption{Net Remittance Impact on Disposable Income}
+    \label{fig:remittances_net}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/33_exchange_rates.png}
+    \caption{Exchange Rate Dynamics: USD/AMD and RUB/AMD Trends}
+    \label{fig:exchange_rates}
+\end{figure}
+
+Remittances and exchange-rate conditions are central to Armenian macroeconomic transmission. Figures \ref{fig:remittances_io} and \ref{fig:remittances_net} should be read not only as balance-of-payments indicators, but also as signals of household purchasing power, housing demand, and import capacity. Figure \ref{fig:exchange_rates} adds the monetary dimension: exchange-rate stability can help contain imported inflation, but excessive appreciation may weaken competitiveness in tradable sectors. The relevant analytical point is therefore not simply whether remittances stayed high, but whether Armenia's domestic demand and currency stability remained too dependent on external private inflows. That dependence is manageable in the short run, yet it becomes a vulnerability if inflows normalize faster than domestic productivity rises.\cite{cbaMPR2025Q1,imfCR24348,wbMEU2025}
+
+\chapter{Real Sector Performance and Nowcasting Results}
+\section{Growth Normalization and the Economic Activity Index}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/07_eai_quarterly_gold.png}
+    \caption{Quarterly EAI Correlation with Gold Mining Activity}
+    \label{fig:eai_gold}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/08_gdp_growth_2024.png}
+    \caption{Annual GDP Growth Path: Monthly and Cumulative Targets (Nowcasted)}
+    \label{fig:gdp_24}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/09_eai_sector_contributions.png}
+    \caption{Sectoral Contributions to the Economic Activity Index}
+    \label{fig:eai_sectors}
+\end{figure}
+
+The core output question of the thesis is not whether Armenia grew, but how it grew. Figure \ref{fig:gdp_24} suggests that the economy remained on a positive expansion path, but the more important evidence comes from Figures \ref{fig:eai_gold} and \ref{fig:eai_sectors}. These indicate whether aggregate growth was supported by diversified sectoral momentum or by a narrow set of high-performing activities. A thesis-grade interpretation must therefore focus on concentration. If the EAI is increasingly explained by services and construction, then headline growth may still look strong while medium-term balance deteriorates. The nowcasting contribution of the dashboard lies exactly here: it helps identify composition before full annual GDP accounts are published.\cite{armstatbank,wbPulse2025,adbADO2024}
+
+\section{Industry and Manufacturing}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/10_industry_monthly_24_25.png}
+    \caption{Monthly Industrial Production (2025)}
+    \label{fig:industry_monthly}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/11_industry_sector_contributions.png}
+    \caption{Structural Composition of Industrial Output}
+    \label{fig:industry_structure}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/12_manufacturing_subsectors.png}
+    \caption{Growth Rates in Key Manufacturing Subsectors}
+    \label{fig:manufacturing}
+\end{figure}
+
+Industrial performance should be interpreted as a test of whether growth is becoming more production-based and export-capable. Figure \ref{fig:industry_monthly} captures cyclical momentum; Figure \ref{fig:industry_structure} reveals the weight of major branches; Figure \ref{fig:manufacturing} shows whether subsector growth is concentrated or broad. If mining rebounds while manufacturing remains uneven, the result is resilience without deep structural upgrading. If several manufacturing subsectors strengthen simultaneously, the evidence for diversification becomes much stronger. In this thesis, industry appears more stable than weak, but still less central than construction and services in explaining short-run aggregate acceleration.
+
+\section{Agriculture and Supply-Side Stability}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/13_agriculture_cumulative.png}
+    \caption{Cumulative Agricultural Production (2025)}
+    \label{fig:agri_cumulative}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/14_agriculture_sector_contributions.png}
+    \caption{Sectoral Distribution of Agricultural Growth}
+    \label{fig:agri_sectors}
+\end{figure}
+
+Agriculture is not the dominant source of Armenian GDP growth, but it remains important for inflation, rural incomes, and supply-side stability. Figure \ref{fig:agri_cumulative} shows the general trend, while Figure \ref{fig:agri_sectors} indicates whether gains are narrowly concentrated or distributed across subsectors. In analytical terms, stable agricultural performance reduces the probability that low inflation is achieved solely through weak demand or imported disinflation. It also matters for the inclusiveness of growth. A growth model that is too urban and too construction-heavy may raise GDP without diffusing benefits geographically. Agriculture therefore functions in this thesis as a stabilizing rather than leading sector.
+
+\section{Construction, Real Estate, and the Risk of Imbalance}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/15_construction_monthly_24_25.png}
+    \caption{Construction Sector Growth: Monthly Indices}
+    \label{fig:construction_monthly}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/16_construction_funding_sources.png}
+    \caption{Diversification of Construction Funding Sources: State vs Private}
+    \label{fig:construction_funding}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/17_construction_by_sector.png}
+    \caption{Construction Output by Targeted Economic Sector}
+    \label{fig:construction_by_sector}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/18_real_estate_prices.png}
+    \caption{Real Estate Price Index: Apartments vs Private Houses}
+    \label{fig:re_prices}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/19_real_estate_transactions.png}
+    \caption{Volume of Real Estate Transactions: National Overview}
+    \label{fig:re_trans}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/20_construction_permits_yerevan.png}
+    \caption{Yerevan Construction Permits: A Leading Indicator for 2025}
+    \label{fig:permits_yerevan}
+\end{figure}
+
+Construction is the most important sector in the thesis and also the main source of concern. Figures \ref{fig:construction_monthly}--\ref{fig:permits_yerevan} suggest that the sector was not merely expanding, but shaping the broader macroeconomic environment through investment, employment, housing demand, and bank credit. The analytical question is whether this represents healthy capital formation or concentration risk. A diversified funding structure would reduce vulnerability, but persistent price increases, elevated transaction activity, and strong permit issuance may also indicate overheating in urban real estate. Therefore, construction should be interpreted as both a growth engine and a fragility channel. If aggregate GDP is increasingly tied to this sector, then the apparent strength of Armenia's economy may overstate its balance.
+
+Three additional points follow from this evidence. First, the quality of construction matters as much as its quantity. A rise driven by productive infrastructure, export-supporting logistics, and broad-based regional investment would strengthen Armenia's long-run capacity. By contrast, a rise dominated by urban housing turnover, speculative land dynamics, and narrowly concentrated apartment development would generate much weaker productivity spillovers. The same growth rate can therefore imply very different macroeconomic meanings depending on the composition of the underlying projects.
+
+Second, the construction cycle affects more than output alone. When property prices, transaction volumes, and permits all remain elevated at the same time, they can reshape household expectations, redirect bank lending, and increase the economy's sensitivity to changes in financing conditions. This is especially important in a small open economy where external inflows, migration shocks, and exchange-rate movements may temporarily support real-estate demand. Under those conditions, construction can amplify a positive cycle quickly, but it can also transmit reversal risk quickly if financing, migration-driven demand, or public-sector support weaken.
+
+Third, the policy implication is not that construction growth is undesirable, but that it must be monitored together with affordability, credit concentration, and the balance between tradable and non-tradable sectors. If construction continues to dominate while industry and productivity-enhancing investment expand more slowly, headline GDP may remain strong even as the underlying growth model becomes less balanced. In that sense, the sector is the clearest case in the thesis where short-run strength and medium-term vulnerability coexist.
+
+\chapter{Labor Market, Demographics, and Social Dynamics}
+\section{Employment and the ICT Shift}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/21_employment_quarterly.png}
+    \caption{Total Employment: Quarterly Trends (Thousands)}
+    \label{fig:employment_q}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/22_employment_rate.png}
+    \caption{Employment Rate (\%) Performance}
+    \label{fig:emp_rate}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/23_employment_structure.png}
+    \caption{Labor Market Structure: Wage Employees vs Self-Employed}
+    \label{fig:emp_structure}
+\end{figure}
+
+Labor indicators help determine whether Armenia's growth translated into formalization and productive job creation. Figures \ref{fig:employment_q} and \ref{fig:emp_rate} indicate whether labor demand remained robust, while Figure \ref{fig:emp_structure} reveals whether employment shifted toward wage-based forms associated with formal-sector expansion. This matters because the ICT story is economically meaningful only if it supports durable employment, wage growth, and productivity rather than isolated firm-level success. The thesis interprets the labor data as evidence of tightening conditions, but not as proof that all sectors are becoming equally productive. The transition toward more formal employment is a positive sign; the challenge is whether high-value job creation is broad enough to absorb labor outside the main urban and service centers.
+
+\section{Unemployment and Labor-Market Tightness}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/24_unemployment_count.png}
+    \caption{Total Unemployed Count (Thousands)}
+    \label{fig:unemp_count}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/25_unemployment_rate.png}
+    \caption{Unemployment Rate Dynamics (2025)}
+    \label{fig:unemployment_rate}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/26_labor_market_changes.png}
+    \caption{Analytical Summary of Labor Market Flows}
+    \label{fig:labor_flows}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/27_registered_unemployed_growth.png}
+    \caption{Year-on-Year Growth of Registered Unemployed}
+    \label{fig:registered_unemp}
+\end{figure}
+
+Falling unemployment can indicate genuine labor-market improvement, but in Armenia it must be interpreted together with migration, participation, and skills availability. Figures \ref{fig:unemp_count}--\ref{fig:registered_unemp} are therefore read as a set. If unemployment declines while labor demand rises and formal employment expands, then the macro signal is clearly positive. If unemployment declines while labor-force participation weakens or registered unemployment behaves differently from survey-based measures, then the interpretation is more complex. The thesis reads current dynamics as evidence of tightening labor conditions, with an emerging risk that labor shortages, especially in skilled occupations, could limit further expansion in ICT, advanced services, and parts of manufacturing.
+
+\section{Migration, Labor Supply, and Demographic Dynamics}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/28_labor_resources.png}
+    \caption{Evolution of Total Labor Resources}
+    \label{fig:labor_resources}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/29_labor_supply.png}
+    \caption{Active Labor Supply Trends}
+    \label{fig:labor_supply}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/30_outside_labor_force.png}
+    \caption{Population Outside the Labor Force (Non-Active)}
+    \label{fig:outside_labor}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/40_migration_balance.png}
+    \caption{Net Migration Balance: Longitudinal View (2021-2024)}
+    \label{fig:migration}
+\end{figure}
+
+Migration has macroeconomic significance in Armenia because it affects labor supply, housing demand, services consumption, and fiscal needs simultaneously. Figures \ref{fig:labor_resources}--\ref{fig:migration} suggest that demographic dynamics contributed to the economy's resilience, but the effect should not be romanticized. A positive migration balance can temporarily support demand and labor availability, yet it can also intensify pressure on housing, public services, and urban infrastructure. The main analytical conclusion is that migration strengthened short-run economic capacity, but it did not eliminate the need for deeper productivity growth and better labor allocation.
+
+\section{Wages and Purchasing Power}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/31_wage_headcount_by_sector.png}
+    \caption{Nominal Wage Growth vs Headcount Changes by Sector}
+    \label{fig:wages_headcount}
+\end{figure}
+
+Figure \ref{fig:wages_headcount} is valuable because it links sectoral labor demand to income dynamics. Rapid wage growth in sectors with expanding headcount usually signals strong demand and possible productivity gains, but rapid wage growth with weak headcount growth may instead reflect scarcity of specialized labor. In Armenia's case, the combination of construction and ICT wage dynamics reinforces the thesis's central argument: the economy was expanding, but the benefits and pressures of that expansion were concentrated in a limited number of sectors. This supports the view that labor-market tightening was real, while also highlighting the risk of inequality between dynamic urban sectors and the rest of the economy.
+
+\chapter{Macroeconomic Stability, Fiscal Policy, and Financial Exposure}
+\section{Inflation and Monetary Conditions}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/34_monthly_cpi.png}
+    \caption{Consumer Price Index (CPI) Stability (Monthly)}
+    \label{fig:cpi}
+\end{figure}
+
+Inflation performance is a key test of whether fast growth remained manageable. Figure \ref{fig:cpi} suggests that price pressures were relatively contained compared with the scale of domestic expansion. This is analytically important because it indicates that strong growth did not automatically translate into generalized overheating. However, low inflation alone should not be treated as proof of macroeconomic perfection. Imported disinflation, exchange-rate effects, and sector-specific supply conditions may all contribute to headline price stability. The thesis therefore interprets subdued inflation as supportive evidence of stability, but not as a sufficient argument against underlying imbalances elsewhere in the economy.\cite{cbaImpl2025,cbaMPR2025Q1}
+
+\section{Fiscal Position and the Quality of Public Demand}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/36_state_budget_revenue_expenditure.png}
+    \caption{State Budget Revenues vs Expenditures (2025)}
+    \label{fig:budget}
+\end{figure}
+
+Fiscal developments matter for two reasons. First, the budget affects aggregate demand directly through public investment and social spending. Second, a construction-led economy can become more dependent on public capital expenditure than headline GDP figures initially reveal. Figure \ref{fig:budget} therefore should be read not merely as an accounting comparison between revenues and expenditures, but as evidence on the sustainability of the current growth pattern. If spending rises faster than revenue for several years, fiscal support may be stabilizing in the short run while increasing medium-term debt and financing pressure. The quality of expenditure is thus as important as its scale.\cite{minfinBudget,wbPER2023}
+
+\section{Banking Exposure and Credit Concentration}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/37_loan_structure_sector.png}
+    \caption{Loan Portfolio Distribution by Economic Sector}
+    \label{fig:loans}
+\end{figure}
+
+Banking-system resilience cannot be evaluated from profitability alone. Figure \ref{fig:loans} is important because it shows sector concentration in the loan book. If credit is disproportionately allocated to construction, mortgages, or consumption-related activities, then the financial system becomes more exposed to a reversal in the same sectors currently driving growth. In that case, the banking sector amplifies the economic cycle instead of merely financing it. The thesis therefore treats loan concentration as a transmission channel of macroeconomic risk, especially when read together with real-estate price growth and permit activity.\cite{imfCR24348,cbaMPR2025Q1}
+
+\section{Trade, Utilities, Regional Output, and the IT Base}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/32_external_trade_comparative.png}
+    \caption{External Trade Balance: Exports and Imports Comparison}
+    \label{fig:external_trade}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/35_utility_production_monthly.png}
+    \caption{Electricity, Gas, and Steam Supply: Monthly Production}
+    \label{fig:utilities}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/38_regional_industrial_output.png}
+    \caption{Industrial Output by Administrative Region (Marz)}
+    \label{fig:regional_industry}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/39_it_sector_structure.png}
+    \caption{Internal Composition of the Armenian IT Sector}
+    \label{fig:it_structure}
+\end{figure}
+
+These figures broaden the analysis beyond aggregate stability. Figure \ref{fig:external_trade} indicates whether domestic growth is accompanied by external rebalancing or by continued import dependence. Figure \ref{fig:utilities} offers a proxy for underlying productive activity. Figure \ref{fig:regional_industry} helps assess whether industrial gains are geographically concentrated. Finally, Figure \ref{fig:it_structure} is essential for evaluating whether Armenia's celebrated IT expansion is broad enough to count as structural transformation. Taken together, these charts suggest that Armenia has made progress toward a more modern economic base, but regional and sectoral concentration remain prominent.\cite{armstatbank,wbTrade2024,wbCPF2025}
+
+\chapter{Integrated Discussion: What Really Drove the Armenian Economy?}
+The evidence assembled in this thesis points to a clear but nuanced conclusion. Armenia's economy through 2026 Q1 was resilient, yet the resilience was unevenly distributed across sectors and channels. Growth was supported by a favorable combination of external prices, service exports, labor-market tightening, and strong domestic demand. However, not all of these supports are equally durable.
+
+\begingroup
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{2.35cm}>{\raggedright\arraybackslash}p{4.05cm}>{\raggedright\arraybackslash}p{4.05cm}>{\raggedright\arraybackslash}p{4.05cm}@{}}
+    \caption{Analytical synthesis of the dashboard evidence.}
+    \label{tab:dashboard_synthesis}\\
+    \toprule
+    Channel & Main high-frequency signal & GDP interpretation & Main risk implication \\
+    \midrule
+    \endfirsthead
+    \caption[]{Analytical synthesis of the dashboard evidence (continued).}\\
+    \toprule
+    Channel & Main high-frequency signal & GDP interpretation & Main risk implication \\
+    \midrule
+    \endhead
+    \bottomrule
+    \endfoot
+    External sector & Commodity prices, tourism, remittances, and exchange-rate conditions remained supportive through most of the sample. & External conditions helped stabilize demand and service exports, which supported short-run resilience. & These supports are partly exogenous and therefore vulnerable to normalization or geopolitical reversal. \\
+    Real sector & Economic activity, services, and especially construction stayed strong, while industry improved more selectively. & Headline growth was real, but much of it was concentrated in a narrow set of sectors rather than broadly diversified. & Construction-led momentum can overstate the durability of aggregate growth. \\
+    Labor market & Employment, wages, and formal labor indicators improved, while unemployment pressures eased. & The expansion translated into tighter labor conditions and stronger household income in the short run. & Skills shortages and sector concentration may limit how inclusive or productive the labor-market gains become. \\
+    Prices and policy & Inflation remained relatively contained and fiscal support was still visible in demand conditions. & Macroeconomic management prevented the boom from turning into generalized overheating. & Stable inflation does not remove the underlying concentration risk if growth remains dependent on a few channels. \\
+    Banking and balance-sheet exposure & Credit and real-estate-sensitive indicators remained heavily linked to the construction cycle. & Financial conditions amplified the same sectors that were already driving growth. & A reversal in construction or housing could transmit quickly into the banking system and domestic demand. \\
+\end{longtable}
+\endgroup
+
+Construction was the largest near-term engine of expansion. It stimulated output, employment, income, and related credit demand. At the same time, it increased Armenia's exposure to property-cycle risk, budget dependence, and banking concentration. This means that the same sector that improved the nowcast also raised the medium-term risk profile of the economy.
+
+The ICT sector represented the strongest candidate for genuine structural upgrading. Its importance lies not only in turnover or employment, but in its potential to support higher productivity, service exports, and wage growth. Yet the labor-market figures suggest that this transformation is constrained by skills and concentration. A modern sector can be strategically important without yet being broad enough to transform the whole economy.
+
+External conditions remained favorable enough to support stability. Commodity prices, remittances, tourism flows, and exchange-rate conditions all contributed to resilience. But these channels are partly exogenous. They can strengthen growth without proving that the domestic economy has become fundamentally less vulnerable.
+
+Inflation remained relatively subdued, which is a positive result. Still, low inflation coexisting with rapid construction, rising wages in selected sectors, and expanding public expenditure should be interpreted as a sign of mixed macro conditions rather than an all-clear signal. In other words, Armenia did not appear to be in generalized overheating, but it did exhibit pockets of sectoral and financial concentration that deserve policy attention.
+
+The central analytical judgment of the thesis is therefore as follows: Armenia's economy was not weak, nor was it simply reverting to pre-shock fragility. It was transitioning from shock-driven expansion toward a more institutionalized growth model, but that model remained incomplete. The positive side of the transition was diversification in services, formal employment, and parts of the external sector. The negative side was a persistent dependence on construction-centered demand and concentrated sources of momentum.
+\chapter{Nowcasting Framework, Model Construction, and Empirical Results}
+
+\section{Overview of the Nowcasting System}
+
+This chapter presents the final pseudo real-time nowcasting system for Armenia's real GDP growth. The purpose of the framework is to estimate quarterly year-on-year GDP growth before the official release by combining quarterly macroeconomic information, monthly official indicators, and faster market- and search-based signals. The empirical design is organized around three information stages:
+\begin{itemize}
+    \item \textbf{Early}: only month-1 fast indicators and lagged macroeconomic information are available;
+    \item \textbf{Mid}: first monthly official releases for the quarter become available;
+    \item \textbf{Late}: the within-quarter information set is close to complete before the GDP publication.
+\end{itemize}
+
+The stage structure matters because the information set changes materially within the quarter. In normal periods, relatively standard bridge and regularized regression models are often sufficient. In crisis periods, especially in the \textit{Early} stage, the same-quarter signal is sparse and noisy. For that reason, the final system does not rely on a single specification. Instead, it combines structural benchmarks, machine-learning models, and targeted regime adjustments.
+
+This point is especially important given the focus of the thesis on alternative data sources. In the Armenian application, alternative indicators are not an ornamental addition to an already complete official dataset. They are the main same-quarter signals available at the beginning of the quarter, and they remain valuable later as rapid indicators of external stress, regime change, and turning points that may not yet be visible in the official releases.
+
+The feature design also follows directly from the dashboard chapters that precede this one. The external-sector analysis identified exchange rates, commodity prices, remittances, and tourism-related stress as the fastest channels through which Armenia absorbs foreign shocks. The real-sector discussion highlighted the Economic Activity Index, industry, construction, and services as the main high-frequency domestic activity signals. The labor, price, and financial chapters showed why employment, wages, inflation, and credit conditions matter for distinguishing broad-based growth from concentrated growth. The nowcasting chapter therefore does not begin a new empirical project; it formalizes the same channels in a pseudo real-time forecasting environment.
+
+\section{Data Construction and Feature Engineering}
+
+The target variable is Armenia's quarterly real GDP growth in year-on-year terms, denoted by
+\begin{equation}
+    y_t = 100 \times \frac{GDP_t - GDP_{t-4}}{GDP_{t-4}}.
+\end{equation}
+
+The explanatory information set contains four main data blocks:
+\begin{enumerate}
+    \item \textbf{Quarterly macroeconomic variables}: Russia's GDP growth, CPI, REER, employment, unemployment, income-related variables, exchange-rate indicators, and curated administrative alternative indicators from payment cards and e-money activity.
+    \item \textbf{Monthly official variables}: CPI, Economic Activity Index, industrial growth, construction growth, services growth, monetary aggregates, loans, deposits, and remittance indicators.
+    \item \textbf{High-frequency fast variables}: AMD/USD, AMD/RUB, Brent oil price, copper price, and curated Google Trends blocks.
+    \item \textbf{Shock and external-leading features}: composite search-based shock measures, Russia-linked interaction terms, and financial-stress-style exchange-rate indicators.
+\end{enumerate}
+
+\subsection{Detailed Description of the Data Used}
+
+The empirical dataset used in this study combines quarterly macroeconomic series, monthly official indicators, and fast-moving external and search-based proxies. Building this panel was itself a substantial part of the research, since Armenia does not have a ready-made public nowcasting database.
+
+\paragraph{Quarterly block.}
+The quarterly block contains the target series together with slower-moving macroeconomic controls. It includes Armenia's real GDP growth, Russia's real GDP growth, CPI, REER, employment growth, unemployment, labor-income variables, transfer-income variables, and expenditure-side aggregates such as consumption, investment, exports, and imports. In the refreshed specification, this block also absorbs curated quarterly administrative alternatives from the Central Bank of Armenia: payment-card circulation, domestic card transaction volumes, non-cash transaction shares, active e-money accounts, and e-money transaction flows. This expanded block anchors the system in medium-run macroeconomic structure while also capturing financial-digital behavior that is not visible in the standard national accounts tables alone.
+
+\paragraph{Monthly official block.}
+The monthly official block contains the main real-sector and financial indicators used in bridge-style nowcasting. The final panel includes CPI, the Economic Activity Index, industrial growth, construction growth, services growth, interest rates, cash in circulation, monetary aggregates, deposits, loans, and remittance indicators. It also incorporates monthly extensions collected from the Central Bank of Armenia and ArmStat. These variables carry much of the forecasting power in the \textit{Mid} and \textit{Late} stages.
+
+\paragraph{Fast block.}
+The fast block was introduced to capture information before official monthly releases appear. It includes AMD/USD, AMD/RUB, Brent oil, copper prices, and several groups of Google Trends indicators. These variables are particularly important in the \textit{Early} stage, when no same-quarter official monthly indicators are yet available.
+
+\paragraph{Alternative-data and shock block.}
+Because the thesis is specifically about GDP nowcasting with alternative data sources, this block is central to the empirical strategy. Rather than using individual search terms directly, the framework aggregates them into thematic composites: housing stress, relocation intensity, banking stress, and jobs/IT relocation. These are then combined into an overall shock composite. The alternative-data architecture is therefore two-layered: quarterly administrative fintech proxies capture the scale and composition of non-cash activity, while the fast Google-based block captures behavioral stress, relocation pressure, and demand shifts. This reduces dimensionality and makes the resulting signals easier to interpret economically. In substantive terms, the block provides rapid evidence on stress, mobility, financial anxiety, and payment behavior before those developments are fully summarized in the official monthly statistics.
+
+\paragraph{External-leading block.}
+Because Armenian GDP is highly exposed to external disturbances, especially those transmitted through Russia, the framework also includes interaction variables such as oil--RUB, copper--RUB, RUB stress, and a simple financial-stress proxy derived from AMD/USD and AMD/RUB volatility. These variables help the model react earlier to turning points originating outside Armenia.
+
+Quarterly engineered features were constructed to reflect Armenia's external dependence and crisis sensitivity. In particular, the final framework included:
+\begin{align}
+    \text{MigrationInflux}_t &= \frac{\max(0, 100 - FX^{AMD/USD}_{yoy,t}) \cdot \max(0, PI^{yoy}_t)}{100}, \\
+    \text{RU\_ARM\_Gap}_t &= y_t - y^{RU}_t, \\
+    \text{RU\_Oil\_Link}_t &= y^{RU}_t \cdot Oil_t, \\
+    \text{RU\_AMD\_RUB\_Link}_t &= y^{RU}_t \cdot FX^{AMD/RUB}_t.
+\end{align}
+
+At the monthly level, the fast block was aggregated into quarterly-stage features using means, last-observation summaries, and a simple Almon-style weighted average:
+\begin{equation}
+    x^{ALMON}_{t} = 0.2119 x_{t,1} + 0.5761 x_{t,2} + 0.2119 x_{t,3},
+\end{equation}
+where the weights were adapted to the number of months available at each stage.
+
+Google Trends variables were not used individually in the final preferred system. Instead, they were grouped into interpretable composite blocks:
+\begin{itemize}
+    \item \texttt{FAST\_SHOCK\_HOUSING},
+    \item \texttt{FAST\_SHOCK\_RELOCATION},
+    \item \texttt{FAST\_SHOCK\_BANKING},
+    \item \texttt{FAST\_SHOCK\_JOBS\_IT},
+    \item \texttt{FAST\_SHOCK\_COMPOSITE}.
+\end{itemize}
+
+In addition, external-leading features were added in order to capture Armenia's sensitivity to Russian and global shocks:
+\begin{align}
+    \text{RUS\_LINK\_OIL\_RUB}_m &= FX^{AMD/RUB}_m \cdot Oil_m, \\
+    \text{RUS\_LINK\_COPPER\_RUB}_m &= FX^{AMD/RUB}_m \cdot Copper_m, \\
+    \text{RUS\_LINK\_RUB\_STRESS}_m &= \left| \Delta FX^{AMD/RUB}_m \right|, \\
+    \text{FIN\_STRESS\_PROXY}_m &= \frac{\left| \Delta FX^{AMD/USD}_m \right| + \left| \Delta FX^{AMD/RUB}_m \right|}{2}.
+\end{align}
+
+This data structure reflects the basic economic logic of the Armenian nowcasting problem. GDP is quarterly and released with delay, but the relevant signals arrive at different frequencies and through different channels. The framework therefore combines slow-moving macroeconomic structure, monthly official activity indicators, and fast market and search proxies in a single leakage-safe design.
+
+The importance of alternative data also changes across stages. In \textit{Early}, the nowcast relies heavily on lagged quarterly structure plus month-1 alternative indicators such as exchange rates, commodity prices, Google Trends composites, and external stress features because same-quarter official monthly releases are not yet available. In \textit{Mid}, those alternative indicators remain in the information set, but they are joined by the first official monthly releases, which sharply improve identification of current-quarter activity. In \textit{Late}, the same official monthly series are observed with much fuller within-quarter coverage, yet the alternative-data block still matters because it helps monitor external transmission channels and detect abrupt changes that may not be fully summarized by the official averages alone.
+
+\section{Pseudo Real-Time Evaluation Design}
+
+All models were evaluated in an expanding-window pseudo real-time backtest. Let $t$ denote the target quarter. For each quarter and each information stage, the model was estimated using only the information available at that point:
+\begin{itemize}
+    \item in the \textbf{Early} stage, the information set contains lagged quarterly macro variables together with month-1 alternative indicators from exchange rates, commodity prices, Google Trends composites, and shock features, while no same-quarter official monthly variables are used;
+    \item in the \textbf{Mid} stage, month-2 alternative indicators remain available and are joined by the first official monthly release for the target quarter;
+    \item in the \textbf{Late} stage, the within-quarter information set is close to complete, so the nowcast uses fuller within-quarter observations for the official monthly block while retaining the alternative indicators for external and regime monitoring.
+\end{itemize}
+
+In practice, this means that preprocessing, feature selection, scaling, imputation, PCA reduction, and model fitting were all re-estimated inside each training window. This limits information leakage and makes the reported forecast errors methodologically credible.
+
+An important limitation should be stated explicitly. The design is pseudo real-time rather than full real-vintage real-time. The stage masks follow the historical release calendar, but the underlying workbook primarily uses the latest revised data vintages, not a complete archive of every historical vintage seen by policymakers at each forecast date. The reported results therefore measure robust comparative performance under release-timing constraints, while true vintage-revision uncertainty remains only partially captured.
+
+For each model and stage, the following evaluation metrics were computed:
+\begin{align}
+    MAE &= \frac{1}{T}\sum_{t=1}^T |\hat{y}_t - y_t|, \\
+    RMSE &= \sqrt{\frac{1}{T}\sum_{t=1}^T (\hat{y}_t - y_t)^2}, \\
+    MAPE &= \frac{100}{T}\sum_{t=1}^T \left| \frac{\hat{y}_t - y_t}{y_t} \right|.
+\end{align}
+
+Empirical prediction intervals were also constructed from the rolling residual distribution. For each stage-model pair, 50\% and 90\% bands were estimated from historical absolute-residual quantiles.
+
+\section{Benchmark Models}
+
+The benchmark section needs one distinction that earlier draft versions did not make clearly enough. The project evaluated a broader exploratory model set during development, but the final refreshed benchmark set used for the thesis tables is narrower and more disciplined:
+\begin{itemize}
+    \item main structural benchmarks:\\ \texttt{AR}, \texttt{Bridge}, \texttt{MIDAS}, and \texttt{DFM};
+    \item main machine-learning benchmarks:\\ \texttt{ElasticNet}, \texttt{RandomForest}, and \texttt{GradientBoosting};
+    \item main combination benchmarks:\\ \texttt{StackingNowcast}, \texttt{AdaptiveEnsemble}, \texttt{SimpleEnsemble}, and \texttt{ShockSwitch};
+    \item targeted repair models:\\ \texttt{DFMShockAdjusted} and \texttt{EarlyShockAdjusted}.
+\end{itemize}
+
+By contrast, a few models are retained mainly for legacy comparison or diagnostics, especially \texttt{FactorAugmentedPCA}, \texttt{Huber}, \texttt{EarlyShockBridge}, and \texttt{Shadow}, rather than as final preferred benchmarks.
+
+\subsection{Autoregressive Baseline (AR)}
+
+The autoregressive benchmark uses lagged GDP growth and current-quarter regime dummies:
+\begin{equation}
+    y_t = \alpha + \beta_1 y_{t-1} + \beta_2 y_{t-2} + \beta_4 y_{t-4} + \gamma' D_t + \varepsilon_t,
+\end{equation}
+where $D_t$ includes crisis and seasonal indicators. This model serves as the minimum benchmark and is especially useful in extreme quarters because it is stable and difficult to overfit.
+
+\subsection{Bridge Regression}
+
+The bridge model links quarterly GDP growth to quarterly macro variables and selected monthly activity indicators. The operational specification is estimated as a ridge regression:
+\begin{equation}
+    \hat{\beta}^{ridge} = \arg\min_{\beta} \left\{ \sum_{t=1}^{T}(y_t - X_t \beta)^2 + \lambda \|\beta\|_2^2 \right\}.
+\end{equation}
+This model is useful because it balances interpretability and robustness while drawing directly on activity indicators such as the Economic Activity Index, industrial growth, construction, and services.
+
+\subsection{Elastic Net}
+
+Elastic Net is used as the main regularized machine-learning benchmark:
+\begin{equation}
+    \hat{\beta}^{EN} = \arg\min_{\beta} \left\{ \sum_{t=1}^{T}(y_t - X_t \beta)^2 + \lambda \left[ \alpha \|\beta\|_1 + \frac{1-\alpha}{2}\|\beta\|_2^2 \right] \right\}.
+\end{equation}
+It is especially useful in the \textit{Early} stage, where it can screen a high-dimensional feature set and retain the most informative fast indicators without producing an unstable saturated regression.
+
+\subsection{Legacy Factor-Augmented PCA Regression}
+
+The factor-augmented PCA benchmark is an approximate factor model. Monthly variables are first standardized and reduced by principal components:
+\begin{equation}
+    X^{(m)}_t \approx F_t \Lambda',
+\end{equation}
+where $F_t$ denotes the retained principal components. GDP growth is then forecast using ridge regression on the quarterly block and the latent factors:
+\begin{equation}
+    y_t = \alpha + Z_t' \delta + F_t' \theta + \varepsilon_t.
+\end{equation}
+This serves as a useful comparison benchmark, but it is not a true ragged-edge state-space DFM. In the final refreshed benchmark set used for thesis conclusions, this legacy PCA-factor route is replaced operationally by \texttt{MIDAS} because \texttt{MIDAS} preserves timing information more reliably in the Armenian sample.
+
+\subsection{Dynamic Factor Model (DFM)}
+
+The true structural benchmark in the thesis is a mixed-frequency dynamic factor model estimated with \texttt{DynamicFactorMQ}. The measurement equations can be written as
+\begin{align}
+    x_{i,m} &= \lambda_i f_m + u_{i,m}, \\
+    y_t &= \lambda_y f_t^{(q)} + u_{y,t},
+\end{align}
+where $x_{i,m}$ are monthly observed indicators, $f_m$ is the latent common factor, and $f_t^{(q)}$ is the quarterly aggregation of the latent monthly factor. The factor evolves according to
+\begin{equation}
+    f_m = \phi f_{m-1} + \eta_m.
+\end{equation}
+
+The baseline DFM uses one latent factor, first-order factor dynamics, and optionally AR(1) idiosyncratic components. In the context of this thesis, it is the most defensible theory-grounded mixed-frequency benchmark because it handles ragged-edge monthly information directly.
+
+\subsection{DFMShockAdjusted}
+
+The raw DFM still tends to overpredict in sharp collapse quarters because the latent factor smooths abrupt regime shifts. Therefore, a crisis-corrected version was introduced:
+\begin{equation}
+    \hat{y}^{adj}_t = (1-\omega_t)\hat{y}^{DFM}_t + \omega_t s_t,
+\end{equation}
+where $s_t$ is the current-quarter official activity signal derived from the Economic Activity Index, industrial growth, construction, and services, and $\omega_t$ increases when the gap between the DFM nowcast and the contemporaneous activity signal becomes large. The goal is to preserve the structural role of the DFM while correcting its most important crisis-quarter bias.
+
+\subsection{Random Forest}
+
+The Random Forest benchmark approximates the conditional expectation function nonlinearly:
+\begin{equation}
+    \hat{y}_t = \frac{1}{B}\sum_{b=1}^{B} T_b(X_t),
+\end{equation}
+where $T_b(\cdot)$ denotes the $b$-th regression tree. This model can capture nonlinear interactions among fast indicators and crisis dummies, but in a small sample it can be less stable than regularized linear alternatives.
+
+\subsection{Gradient Boosting}
+
+The boosting benchmark iteratively updates the forecast function by fitting trees to the residuals:
+\begin{equation}
+    f_M(x) = \sum_{m=1}^{M} \nu h_m(x),
+\end{equation}
+where $h_m(\cdot)$ are shallow trees and $\nu$ is the learning rate. This model is intended to capture nonlinear relationships and interactions, especially in the \textit{Mid} stage.
+
+\subsection{Huber Regression}
+
+Huber regression minimizes a robust loss:
+\begin{equation}
+    L_\delta(r) =
+    \begin{cases}
+        \frac{1}{2}r^2, & |r| \leq \delta, \\
+        \delta \left(|r| - \frac{1}{2}\delta \right), & |r| > \delta.
+    \end{cases}
+\end{equation}
+In principle, this should help when forecast errors are heavy-tailed. In practice, it remained unstable in the Armenian GDP application and therefore served mainly as a diagnostic benchmark.
+
+\subsection{EarlyShockBridge}
+
+This benchmark was designed for the \textit{Early} stage only. It uses a restricted information set composed of lagged GDP, fast shock composites, exchange rates, oil, copper, and crisis dummies:
+\begin{equation}
+    y_t = \alpha + \beta' z_t + \varepsilon_t,
+\end{equation}
+where $z_t$ contains only crisis-sensitive fast indicators. The model is estimated using a Huber-type regression in order to reduce sensitivity to isolated large errors.
+
+\subsection{Shadow Model}
+
+The Shadow model is a stability benchmark using only a very small set of robust predictors. It can be written as
+\begin{equation}
+    y_t = \alpha + \beta' x_t^{shadow} + \varepsilon_t,
+\end{equation}
+where $x_t^{shadow}$ includes only a handful of stable variables such as lagged GDP, Russian GDP, CPI, exchange-rate information, and the financial stress proxy. The Shadow model is not designed to win on average accuracy; its value lies in indicating when richer specifications may be drifting too far from historically plausible values.
+
+\subsection{Combination Models}
+
+Four combination-style models were used across the project, but only one of them becomes the final operational reference model:
+\begin{enumerate}
+    \item \textbf{StackingNowcast}: a meta-learner that combines base-model predictions directly,
+    \begin{equation}
+        \hat{y}_t^{stack} = g\!\left(\hat{y}_t^{AR}, \hat{y}_t^{Bridge}, \hat{y}_t^{ElasticNet}, \hat{y}_t^{RF}, \hat{y}_t^{DFM}, \ldots \right),
+    \end{equation}
+    where $g(\cdot)$ is estimated on the expanding training window. This is the final operational model reported in the refreshed thesis results.
+    \item \textbf{SimpleEnsemble}: arithmetic average of a subset of model forecasts. It remains a useful comparator but not the preferred final specification.
+    \item \textbf{AdaptiveEnsemble}: weighted average of recent model predictions, where the weights are inversely proportional to recent regime-specific absolute errors:
+    \begin{equation}
+        w_{j,t} \propto \frac{1}{MAE_{j,t-1:t-k} + \epsilon}, \qquad
+        \hat{y}_t = \sum_j w_{j,t}\hat{y}_{j,t}.
+    \end{equation}
+    \item \textbf{ShockSwitch}: a regime-dependent combination of Bridge, Elastic Net, and Random Forest forecasts:
+    \begin{equation}
+        \hat{y}_t = (1-p_t)\hat{y}^{normal}_t + p_t \hat{y}^{shock}_t,
+    \end{equation}
+    where $p_t \in [0,1]$ is the estimated probability of being in a shock regime.
+\end{enumerate}
+
+The main difference across these combination models is conceptual. \texttt{SimpleEnsemble} averages fixed ingredients, \texttt{AdaptiveEnsemble} changes weights based on recent performance, and \texttt{ShockSwitch} changes weights based on regime classification. \texttt{StackingNowcast}, by contrast, learns a direct meta-mapping from the set of base nowcasts into the final GDP nowcast and is therefore the most flexible combination design used in the thesis.
+
+\subsection{EarlyShockAdjusted}
+
+The final targeted month-1 crisis benchmark is \texttt{EarlyShockAdjusted}. It starts from the best \textit{Early}-stage baseline and then applies a smooth crisis correction:
+\begin{equation}
+    \hat{y}^{ESA}_t = \hat{y}^{base}_t - A_t,
+\end{equation}
+where the adjustment $A_t$ depends on a lockdown dummy, a smoothed shock-regime probability, agreement across multiple fast indicators, and the intensity of the shock composites. In the most extreme lockdown case, the model also uses the AR benchmark as an anchor in order to avoid implausibly high nowcasts.
+
+\section{Shock-Regime Classification}
+
+One of the more important features of the final framework is that crisis adjustment is not based on a hard threshold alone. Instead, a logistic regression classifier is used to estimate the probability of entering a shock regime:
+\begin{equation}
+    p_t = \Pr(S_t = 1 \mid z_t) = \frac{1}{1 + e^{-(\alpha + z_t'\beta)}},
+\end{equation}
+where $z_t$ includes the fast shock composite, banking and housing shock blocks, AMD/USD, AMD/RUB, oil, copper, and external stress features.
+
+Alongside the probability model, a sign-agreement rule was imposed. A downward crisis correction is activated only when several unrelated fast indicators jointly signal distress. This reduces false alarms in non-crisis quarters while preserving responsiveness during genuine systemic shocks.
+
+\section{Empirical Results}
+
+\subsection{Data, Information Stages, and Model Architecture Summary}
+
+Before turning to the headline forecast results, it is useful to summarize the empirical ingredients of the system in a compact way. The following tables provide that overview and make the chapter easier to read as a self-contained account of the nowcasting framework.
+
+\begin{table}[H]
+    \centering
+    \footnotesize
+    \setlength{\tabcolsep}{4pt}
+    \caption{Main data blocks used in the Armenian GDP nowcasting system, with emphasis on alternative sources.}
+    \label{tab:data_blocks_used}
+    \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{2.15cm}>{\raggedright\arraybackslash}p{1.45cm}YY@{}}
+        \toprule
+        Data block & Frequency & Main examples & Main role in the system \\
+        \midrule
+        Quarterly macro block & Quarterly & Armenia and Russia GDP growth, CPI, REER, labor-market, income, and expenditure aggregates & Provides macro structure and stabilizes the nowcast when same-quarter monthly information is still incomplete. \\
+        Monthly official block & Monthly & Economic Activity Index, CPI, industry, construction, services, loans, deposits, remittances, and monetary aggregates & Provides the core real-activity signal in the \textit{Mid} and \textit{Late} stages once official releases begin to arrive. \\
+        Alternative market block & Daily / monthly & AMD/USD, AMD/RUB, Brent oil, copper, and a financial-stress proxy & Supplies the first same-quarter signal in \textit{Early} and remains useful for external-spillover monitoring. \\
+        Alternative search and shock block & High-frequency & Housing stress, relocation, banking stress, jobs/IT relocation, and external-stress interactions & Captures crisis intensity and behavioral shifts before they appear in official releases. \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+\begin{table}[H]
+    \centering
+    \small
+    \caption{Information available in each nowcasting stage and the role of alternative data.}
+    \label{tab:stage_design_summary}
+    \begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{1.4cm}YYY}
+        \toprule
+        Stage & Information available & Main forecasting difficulty & Preferred interpretation \\
+        \midrule
+        Early & Lagged quarterly macro variables; month-1 alternative data from exchange rates, commodity prices, Google Trends composites, and shock features; no same-quarter official monthly releases & Sparse same-quarter information and maximum exposure to abrupt crisis noise & Alternative data has its highest marginal value here; \texttt{StackingNowcast} is still the strongest average performer, while explicitly shock-adjusted models remain essential for extreme crisis episodes. \\
+        Mid & Lagged quarterly structure; month-1 and month-2 alternative indicators; first official monthly releases for activity, prices, remittances, and selected financial variables & Combining heterogeneous signals without overweighting noise & Best stage for adaptive combinations, because alternative data and first official releases must be read jointly. \\
+        Late & Lagged quarterly structure; near-complete within-quarter coverage of the official monthly block for the target quarter; alternative indicators retained for external and shock monitoring & Refining the point nowcast and quantifying residual uncertainty & Best stage for the final operational nowcast, where official data dominate but alternative data still help confirm or question the signal. \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+Table~\ref{tab:stage_design_summary} makes the role of alternative data explicit. In the \textit{Early} stage, the nowcast would be materially weaker without exchange rates, commodity prices, Google Trends composites, and shock indicators because there is almost no same-quarter official information to work with. In the \textit{Mid} stage, alternative indicators do not disappear; instead, they complement the first official releases and help determine whether the official signal is consistent with broader market and behavioral movements. In the \textit{Late} stage, the official block becomes more informative because the within-quarter readings are more complete, but alternative data remain useful as a fast check on external spillovers and abrupt changes in regime.
+
+\begin{table}[H]
+    \centering
+    \small
+    \caption{Model taxonomy used in the thesis.}
+    \label{tab:model_taxonomy_summary}
+    \begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{2.0cm}YYY}
+        \toprule
+        Family & Models & Mathematical core & Main role in the thesis \\
+        \midrule
+        Time-series / structural & \texttt{AR}, \texttt{Bridge}, \texttt{MIDAS}, \texttt{DFM} (legacy \texttt{FactorAugmentedPCA} evaluated in earlier drafts) & Lag dynamics, ridge bridge equations, mixed-frequency aggregation, and state-space factor modeling & Provides interpretable benchmarks and the main theory-grounded representation of ragged-edge nowcasting. \\
+        Regularized ML & \texttt{ElasticNet}, \texttt{Huber}, \texttt{EarlyShockBridge} & Penalized regression, robust loss, crisis-sensitive restricted regressions & Screens high-dimensional predictors and stabilizes sparse-information forecasting. \\
+        Nonlinear ML & \texttt{RandomForest}, \texttt{GradientBoosting} & Tree ensembles and nonlinear interaction learning & Tests whether nonlinearities improve performance in a small-sample open-economy setting. \\
+        Combination models & \texttt{StackingNowcast}, \texttt{SimpleEnsemble}, \texttt{AdaptiveEnsemble}, \texttt{ShockSwitch} & Meta-learning, forecast averaging, inverse-error weighting, and regime-dependent switching & Delivers the main operational nowcast by combining complementary model classes; \texttt{StackingNowcast} is the final reference model. \\
+        Shock-adjusted models & \texttt{DFMShockAdjusted}, \texttt{EarlyShockAdjusted} & Structural nowcast plus crisis correction; baseline nowcast minus shock adjustment & Corrects the most important crisis-quarter failures of the baseline models. \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+Chapter 9 also uses a refreshed model set relative to earlier draft iterations. Earlier exploratory versions treated \texttt{FactorAugmentedPCA} and simpler combination schemes more centrally. In the final reported run, \texttt{MIDAS} replaces \texttt{FactorAugmentedPCA} in the main structural benchmark tables, \texttt{StackingNowcast} becomes the main operational reference model, and models such as \texttt{Huber}, \texttt{EarlyShockBridge}, and \texttt{Shadow} are interpreted primarily as secondary or diagnostic benchmarks. This distinction matters because the thesis conclusions are based on the refreshed benchmark set, not on the broader exploratory pool used during model development.
+
+\begin{table}[H]
+    \centering
+    \small
+    \caption{Shock-adjusted model variants and their economic logic.}
+    \label{tab:shock_adjustment_summary}
+    \begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{2.2cm}>{\raggedright\arraybackslash}p{2.5cm}YY}
+        \toprule
+        Baseline model & Adjusted version & Adjustment logic & Main use case \\
+        \midrule
+        \texttt{DFM} & \shortstack[l]{\texttt{DFMShock}\\\texttt{Adjusted}} & The raw factor nowcast is pulled toward a contemporaneous activity signal when the factor model diverges too far in a shock quarter. & Crisis-sensitive correction for \textit{Mid} and \textit{Late} stage factor nowcasts. \\
+        \shortstack[l]{Best \textit{Early}\\baseline} & \shortstack[l]{\texttt{EarlyShock}\\\texttt{Adjusted}} & A smooth crisis adjustment subtracts a lockdown- and shock-probability-driven correction from the month-1 baseline nowcast. & Dedicated repair for extreme sparse-information crisis quarters, especially 2020 Q2 \textit{Early}. \\
+        \shortstack[l]{Static model\\combination} & \texttt{ShockSwitch} & Forecast weights shift toward a shock specification when the estimated crisis probability rises. & Regime-aware operational averaging under changing conditions. \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+\subsection{Headline Accuracy}
+
+The final expanding-window backtest produced the following best-performing models by stage:
+\begin{itemize}
+    \item \textbf{Early}: \texttt{StackingNowcast}, MAPE $= 2.382\%$;
+    \item \textbf{Mid}: \texttt{StackingNowcast}, MAPE $= 2.369\%$;
+    \item \textbf{Late}: \texttt{StackingNowcast}, MAPE $= 1.875\%$.
+\end{itemize}
+
+The main implication is that combination models dominate operationally once a broad set of signals is available, while targeted crisis repair remains important for extreme month-1 episodes. The \textit{Early} stage is still the most fragile because it combines sparse information with the greatest exposure to abrupt crisis noise, but the stacking meta-learner now delivers the strongest average performance across all three stages.
+
+\begin{table}[H]
+    \centering
+    \caption{Headline benchmark accuracy by nowcast stage (MAPE, \%).}
+    \label{tab:headline_accuracy}
+    \begin{tabular}{lccc}
+        \hline
+        Model & Early & Mid & Late \\
+        \hline
+        StackingNowcast & 2.382 & 2.369 & 1.875 \\
+        AdaptiveEnsemble & 2.430 & 2.484 & 2.121 \\
+        ElasticNet & 2.722 & 2.972 & 2.872 \\
+        Bridge & 3.566 & 3.640 & 3.412 \\
+        ShockSwitch & 3.254 & 3.293 & 2.980 \\
+        EarlyShockAdjusted & 2.637 & -- & -- \\
+        DFMShockAdjusted & 4.133 & 3.324 & 2.863 \\
+        DFM & 4.133 & 4.670 & 3.788 \\
+        AR & 3.098 & 3.226 & 3.154 \\
+        \hline
+    \end{tabular}
+\end{table}
+
+Table~\ref{tab:headline_accuracy} contains the central ranking of the chapter. Three patterns stand out. First, \texttt{StackingNowcast} is the strongest stage winner in \textit{Early}, \textit{Mid}, and \textit{Late}, with average stage MAPE $2.209\%$. Second, \texttt{AdaptiveEnsemble} remains a strong operational comparator and still ranks near the top, especially after richer within-quarter information arrives. Third, the structural factor benchmarks remain important for interpretation, but they are not the best performers in average-accuracy terms.
+
+The ranking gap is also economically interpretable rather than only statistical. Relative to \texttt{AdaptiveEnsemble}, \texttt{StackingNowcast} lowers average stage MAPE from $2.345\%$ to $2.209\%$ (a $0.136$ percentage-point reduction). For a GDP year-on-year index typically near $100$--$110$, this corresponds to roughly $0.14$--$0.15$ index points lower absolute error per quarter. The magnitude is modest, but it is meaningful for policy briefing updates and near-term risk assessment.
+
+At the same time, the Armenian pseudo real-time sample is small by machine-learning standards. Each stage contains only 61 quarterly evaluation points, so model rankings should not be read as if they were estimated on a large macro panel. For that reason, the chapter reports both average forecast errors and formal pairwise predictive-accuracy tests. The ranking tables show which models are best on average; the Diebold--Mariano evidence indicates whether those ranking gaps are statistically decisive or whether they should be interpreted more cautiously.
+
+\begin{table}[H]
+    \centering
+    \small
+    \caption{Selected Diebold--Mariano tests for the stage winners using one-step-ahead squared-error loss. Small p-values provide stronger evidence for the listed winner.}
+    \label{tab:dm_selected}
+    \resizebox{\textwidth}{!}{%
+    \begin{tabular}{llccc}
+        \hline
+        Stage & Comparison & DM statistic & p-value & Interpretation \\
+        \hline
+        Early & \texttt{StackingNowcast} vs \texttt{AdaptiveEnsemble} & -0.562 & 0.576 & Not statistically decisive \\
+        Mid & \texttt{StackingNowcast} vs \texttt{AdaptiveEnsemble} & -0.123 & 0.902 & Not statistically decisive \\
+        Late & \texttt{StackingNowcast} vs \texttt{AdaptiveEnsemble} & -1.310 & 0.195 & Not statistically decisive \\
+        \hline
+    \end{tabular}
+    }
+\end{table}
+
+Table~\ref{tab:dm_selected} strengthens the interpretation of the ranking tables. Point estimates now favor \texttt{StackingNowcast} across all stages, but none of the pairwise Diebold--Mariano gaps against \texttt{AdaptiveEnsemble} are statistically decisive at conventional levels. That is not a failure of the framework; it is the expected result when a small open economy offers only a limited quarterly history and several reasonable models perform similarly in normal periods.
+
+One additional caveat is multiple testing. The chapter reports selected pairwise DM comparisons as directional evidence, and the corresponding p-values are not adjusted by a formal family-wise correction (for example Holm-Bonferroni) across the full model-comparison grid. The DM results should therefore be interpreted as supportive but non-definitive evidence alongside the stable ranking patterns.
+
+\subsection{Marginal Value of Google Trends Composites}
+
+Because the thesis claims that alternative search-based signals are especially useful at the beginning of the quarter, the Google Trends block should be evaluated separately rather than only absorbed into a larger model family comparison. To do that, the study ran a focused \textit{Early}-stage ablation using a ridge-style benchmark with four information sets: a structural base, the base plus market variables, the base plus Google Trends composites, and the full combination of base, market, and Google composites.
+
+\begin{table}[H]
+    \centering
+    \small
+    \caption{Early-stage Google Trends composite ablation. The comparison isolates the marginal role of the search-based composite block from the fast market-variable block.}
+    \label{tab:google_ablation}
+    \begin{tabular}{lcc}
+        \hline
+        Information set & MAPE (\%) & RMSE \\
+        \hline
+        Base & 3.585 & 5.549 \\
+        Base + Google composites & 3.787 & 5.890 \\
+        Base + market variables & 3.295 & 4.957 \\
+        Base + market variables + Google composites & 3.252 & 4.710 \\
+        \hline
+    \end{tabular}
+\end{table}
+
+The refreshed ablation gives a more precise reading of the alternative-data claim after the fintech-admin block was added to the broader feature set. Relative to the structural base, the fast market block still delivers a clear \textit{Early}-stage improvement, with MAPE falling from $3.585\%$ to $3.295\%$. Adding the Google composite block on top of the market variables now produces a small additional gain, reducing MAPE to $3.252\%$ and RMSE to $4.710$. However, the corresponding Diebold--Mariano comparison between \texttt{Base + market} and \texttt{Base + market + Google composites} remains statistically weak ($p = 0.615$). The correct interpretation is therefore careful rather than triumphalist: the Google composite block can add a small incremental improvement in the refreshed specification, but the evidence is still not strong enough to claim a decisive standalone accuracy effect.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.84\textwidth]{google_trends_marginal_value.png}
+    \caption{Marginal value of Google Trends composites in the \textit{Early} nowcasting stage. The figure shows that the market block delivers the largest improvement over the structural base, while adding Google composites on top of the market block provides a smaller but still directionally favorable MAPE gain.}
+    \label{fig:google_ablation}
+\end{figure}
+
+\begin{table}[H]
+    \centering
+    \small
+    \caption{Top five model rankings by information stage.}
+    \label{tab:top5_by_stage}
+    \resizebox{\textwidth}{!}{%
+    \begin{tabular}{llclclc}
+        \hline
+        Rank & Early model & MAPE & Mid model & MAPE & Late model & MAPE \\
+        \hline
+        1 & StackingNowcast & 2.382 & StackingNowcast & 2.369 & StackingNowcast & 1.875 \\
+        2 & AdaptiveEnsemble & 2.449 & AdaptiveEnsemble & 2.502 & AdaptiveEnsemble & 2.140 \\
+        3 & EarlyShockAdjusted & 2.656 & SimpleEnsemble & 2.783 & Shadow & 2.506 \\
+        4 & ElasticNet & 2.741 & RandomForest & 2.964 & SimpleEnsemble & 2.732 \\
+        5 & SimpleEnsemble & 2.853 & ElasticNet & 2.984 & DFMShockAdjusted & 2.876 \\
+        \hline
+    \end{tabular}
+    }
+\end{table}
+
+\begin{table}[H]
+    \centering
+    \small
+    \caption{Average accuracy by model family and stage (MAPE, \%).}
+    \label{tab:family_stage_summary}
+    \begin{tabular}{lccc}
+        \hline
+        Family & Early & Mid & Late \\
+        \hline
+        Combination & 2.725 & 2.732 & 2.424 \\
+        Structural & 3.642 & 3.671 & 3.229 \\
+        ML & 5.979 & 4.150 & 3.486 \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\begin{table}[H]
+    \centering
+    \small
+    \caption{Selected robustness diagnostics for key benchmark models.}
+    \label{tab:robustness_selected}
+    \resizebox{\textwidth}{!}{%
+    \begin{tabular}{llcccc}
+        \hline
+        Model & Stage & Overall MAPE & Shock MAPE & Non-shock MAPE & Prediction bias \\
+        \hline
+        EarlyShockAdjusted & Early & 2.656 & 3.435 & 2.402 & 0.726 \\
+        ElasticNet & Early & 2.741 & 4.287 & 2.236 & -0.969 \\
+        StackingNowcast & Mid & 2.369 & 2.646 & 2.189 & 0.106 \\
+        StackingNowcast & Late & 1.875 & 2.228 & 1.661 & 0.142 \\
+        DFMShockAdjusted & Mid & 3.343 & 3.024 & 3.549 & -2.136 \\
+        DFMShockAdjusted & Late & 2.876 & 2.470 & 3.121 & -1.754 \\
+        DFM & Mid & 4.608 & 6.241 & 3.549 & -4.259 \\
+        AR & Early & 3.117 & 3.730 & 2.917 & -1.639 \\
+        \hline
+    \end{tabular}
+    }
+\end{table}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.88\textwidth]{backtest_stage_mape.png}
+    \caption{Benchmark accuracy across the three information stages. The figure shows that model ranking is stage-dependent, with combination models led by \texttt{StackingNowcast} performing best on average in all three stages, while targeted shock-adjusted specifications remain important for extreme crisis quarters.}
+    \label{fig:stage_mape}
+\end{figure}
+
+Figure~\ref{fig:stage_mape} summarizes the empirical results visually. It makes clear that the Armenian GDP nowcasting problem does not look the same throughout the quarter. In the \textit{Early} stage, the forecaster sees only a limited fast-information set and the value of explicit shock correction is highest. In the \textit{Mid} and \textit{Late} stages, the informational advantage shifts toward models that combine several complementary signals.
+
+A compact calibration diagnostic for the operational winner \texttt{StackingNowcast} confirms this interpretation. The empirical 50\%/90\% interval coverage rates are \textit{Early} $0.528/0.792$, \textit{Mid} $0.491/0.887$, and \textit{Late} $0.491/0.906$. This indicates broadly acceptable high-coverage behavior at the 90\% level with some undercoverage in tighter 50\% bands, especially outside the \textit{Early} stage. In parallel, DFM fit metadata show stable estimation in the refreshed run: for both \texttt{DFM} and \texttt{DFMShockAdjusted}, most fits use \texttt{2f\_full\_ar1} (58/61 in \textit{Early}, 60/61 in \textit{Mid}, 60/61 in \textit{Late}), the remainder use \texttt{2f\_full\_white\_noise}, and convergence flags are true for all stage-quarter evaluations.
+
+\subsection{Structural and Crisis Benchmarks}
+
+Among factor-based and structural benchmarks, the hierarchy is the following:
+\begin{itemize}
+    \item \texttt{DFM} is the main theory-grounded mixed-frequency benchmark;
+    \item \texttt{DFMShockAdjusted} is the strongest crisis-corrected factor benchmark;
+    \item \texttt{MIDAS} replaces the old PCA-factor baseline and avoids catastrophic timing-loss failures.
+\end{itemize}
+
+The \texttt{DFMShockAdjusted} benchmark achieves:
+\begin{itemize}
+    \item \textbf{Mid}: MAPE $= 3.343\%$;
+    \item \textbf{Late}: MAPE $= 2.876\%$.
+\end{itemize}
+
+This confirms that the true DFM remains academically valuable, but the operationally best model in this application is a stacked combination model rather than a single structural specification.
+
+\begin{table}[H]
+    \centering
+    \caption{Factor and structural benchmark comparison (MAPE, \%).}
+    \label{tab:factor_comparison}
+    \begin{tabular}{lccc}
+        \hline
+        Model & Early & Mid & Late \\
+        \hline
+        AR & 3.098 & 3.226 & 3.154 \\
+        Bridge & 3.566 & 3.640 & 3.412 \\
+        MIDAS & 3.280 & 3.495 & 2.929 \\
+        DFM & 4.133 & 4.670 & 3.788 \\
+        DFMShockAdjusted & 4.133 & 3.324 & 2.863 \\
+        \hline
+    \end{tabular}
+\end{table}
+
+Table~\ref{tab:factor_comparison} shows why it is necessary to distinguish between structural relevance and operational accuracy. The MIDAS replacement behaves like a stable structural benchmark without the severe PCA-compression failure seen in earlier drafts. The true mixed-frequency DFM is methodologically superior, but it still needs a crisis correction. Once that correction is added, \texttt{DFMShockAdjusted} becomes the strongest factor benchmark in \textit{Mid} and \textit{Late}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.88\textwidth]{backtest_dfm_shock_adjusted.png}
+    \caption{Actual GDP growth and the crisis-adjusted factor benchmark in the \textit{Late} stage. The figure illustrates the role of the DFM as a structural benchmark and shows how the crisis-adjusted version reduces the raw factor model's overprediction during abrupt downturns.}
+    \label{fig:dfm_adjusted}
+\end{figure}
+
+Figure~\ref{fig:dfm_adjusted} matters for the structural interpretation of the results. The adjusted DFM is not the best model in average-accuracy terms, but it is the strongest theory-grounded factor benchmark. The figure shows that the state-space model becomes substantially more useful once the contemporaneous activity signal is allowed to discipline the latent factor during crisis quarters.
+
+\subsection{Crisis-Quarter Results}
+
+The hardest quarter in the sample is 2020 Q2, especially in the \textit{Early} stage, where same-quarter official monthly indicators are not yet available. After the final lockdown-specific calibration, the dedicated \texttt{EarlyShockAdjusted} benchmark reduced the error for \textbf{2020 Q2 Early} to
+\begin{equation}
+    \text{APE}_{2020Q2,\ Early}^{ESA} = 11.459\%.
+\end{equation}
+
+This result matters because earlier general-purpose models produced much larger errors for the same case. The implication is not that one universal model solves every state of the world. Rather, the evidence shows that:
+\begin{enumerate}
+    \item general-purpose models perform well on average;
+    \item the DFM is the correct structural mixed-frequency benchmark;
+    \item targeted regime adjustments are necessary for extreme month-1 crisis quarters.
+\end{enumerate}
+
+\begin{table}[H]
+    \centering
+    \small
+    \caption{Selected crisis-quarter absolute percentage errors (\%). Column labels use abbreviated model names.}
+    \label{tab:shock_quarter_results}
+    \begin{tabular}{llccccc}
+        \toprule
+        Quarter & Stage & AdaEns & ENet & Bridge & DFM-SA & ESA \\
+        \midrule
+        2020 Q2 & Early & 15.827 & 18.045 & 13.854 & 19.964 & 11.459 \\
+        2020 Q2 & Mid   & 14.619 & 11.154 & 11.684 & 7.494  & -- \\
+        2020 Q2 & Late  & 13.548 & 15.959 & 12.961 & 6.295  & -- \\
+        2021 Q2 & Early & 7.692  & 4.599  & 4.583  & 0.358  & 4.599 \\
+        2021 Q4 & Early & 7.136  & 4.730  & 1.440  & 6.182  & 7.593 \\
+        2022 Q2 & Mid   & 4.472  & 4.671  & 0.497  & 2.101  & -- \\
+        2022 Q2 & Late  & 3.497  & 3.558  & 1.778  & 1.935  & -- \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+In Table~\ref{tab:shock_quarter_results}, AdaEns denotes \texttt{AdaptiveEnsemble}, ENet denotes \texttt{ElasticNet}, DFM-SA denotes \texttt{DFMShockAdjusted}, and ESA denotes \texttt{EarlyShockAdjusted}.
+
+Table~\ref{tab:shock_quarter_results} is the main stress-test table in the chapter. It shows that the hardest crisis case is not simply ``a recession quarter'' but specifically the \textit{Early} stage of 2020 Q2. In that setting, the dedicated \texttt{EarlyShockAdjusted} benchmark dominates the alternatives by a very large margin. By contrast, in \textit{Mid} and \textit{Late}, the most important crisis correction comes from \texttt{DFMShockAdjusted}. This supports the stage-dependent design of the final system.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.88\textwidth]{focus_2020q2_models.png}
+    \caption{Evolution of the 2020 Q2 nowcast across the quarter. This is the central crisis-quarter figure in the thesis because it shows how forecast accuracy changes between \textit{Early}, \textit{Mid}, and \textit{Late} as new information arrives.}
+    \label{fig:focus_2020q2}
+\end{figure}
+
+Figure~\ref{fig:focus_2020q2} functions as the main case study of the chapter. It shows that the hard part of crisis nowcasting is not simply forecasting a recession. The real difficulty is forecasting a sudden collapse with only month-1 information. Once official monthly releases begin to appear, the forecast improves quickly. That is why the final conclusion is stage-dependent rather than universally model-dependent.
+
+\subsection{Preferred Final Model Interpretation}
+
+From an \textit{operational} perspective, the preferred final model on average is \texttt{StackingNowcast}, because it is the most accurate specification among models that can be used in all three information stages and it wins in \textit{Early}, \textit{Mid}, and \textit{Late}. From a \textit{structural} perspective, the preferred benchmark is \texttt{DFM}. For \textit{extreme early-shock correction}, the relevant benchmark is \texttt{EarlyShockAdjusted}. This stage- and regime-dependent conclusion is one of the main contributions of the thesis.
+
+\subsection{Detailed Model-by-Model Interpretation}
+
+Average ranking alone is not sufficient. The chapter also needs to explain why the main models work, where they break down, and what those patterns imply for practical nowcasting.
+
+\begin{table}[H]
+    \centering
+    \footnotesize
+    \caption{Interpretation of the main benchmark models.}
+    \label{tab:model_interpretation_detail}
+    \begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{3.9cm}YYY}
+        \toprule
+        Model & Where it performs well & Where it fails or weakens & Empirical interpretation \\
+        \midrule
+        \texttt{StackingNowcast} & Best full-stage operational model; strongest average error profile across all stages; low bias and robust late-stage accuracy. & Still vulnerable in the most extreme month-1 collapse, especially 2020 Q2 \textit{Early}. & Meta-learning across model classes is the most reliable operational strategy once multiple signals become available. \\
+        \texttt{ElasticNet} & Strong in \textit{Early}; good non-shock performance; benefits from regularization when the predictor set is large and sparse. & Less dominant once richer official information becomes available; still vulnerable in severe shock quarters. & Regularization is highly valuable when the information set is thin, but not sufficient by itself for crisis repair. \\
+        \texttt{Bridge} & Economically interpretable and reasonably stable across normal quarters. & Does not dominate in any stage; weaker than the leading ML and combination models in both average and crisis performance. & The bridge model remains useful as an interpretable benchmark, but not as the preferred operational system. \\
+        \texttt{DFM} & Strongest theory-grounded mixed-frequency benchmark; academically defensible structure. & Systematic overprediction, especially in \textit{Mid}; weak crisis handling because the latent factor smooths abrupt breaks. & Structural rigor alone is not enough in a shock-prone small open economy. \\
+        \texttt{DFMShockAdjusted} & Clear improvement over raw \texttt{DFM} in \textit{Mid} and \textit{Late}; strongest factor benchmark in crisis-sensitive settings. & Provides no meaningful improvement in \textit{Early}; still not the best average-accuracy model overall. & Crisis correction materially improves the structural benchmark once contemporaneous activity information exists. \\
+        \texttt{EarlyShockAdjusted} & Best \textit{Early}-stage model; decisive gain in 2020 Q2 \textit{Early}; strongest targeted repair for sparse-information crisis nowcasting. & Available only for the \textit{Early} stage and not intended as the universal final model. & A dedicated shock-adjusted month-1 benchmark is necessary for extreme crisis quarters. \\
+        \texttt{AR} & Stable baseline; relatively good post-2022 performance; useful anchor against implausible forecasts. & Persistent overprediction in shock periods and weaker use of contemporaneous information. & Simplicity gives robustness, but at the cost of responsiveness. \\
+        \texttt{ShockSwitch} & Balanced regime-aware combination with respectable rankings in all stages. & Does not beat \texttt{StackingNowcast} on average and does not solve the deepest early-COVID miss by itself. & Regime switching helps, but a learned stacking layer remains stronger operationally. \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+The time-series and structural models matter mainly because they define the economically interpretable baseline of the thesis. The \texttt{AR} specification is stable and continues to perform reasonably well in the later post-2022 period, but its negative mean residual shows persistent overprediction in shock episodes. The \texttt{Bridge} model is easier to explain economically than most machine-learning benchmarks, yet it remains weaker than the best operational models. The raw \texttt{DFM} is the clearest example of the tradeoff between academic structure and empirical flexibility: in theory it is the correct mixed-frequency benchmark, but in practice its residual profile shows that it smooths through sharp collapses too aggressively and therefore overpredicts when Armenia experiences abrupt turning points.
+
+The machine-learning results are clearly stage-dependent. \texttt{ElasticNet} is strong because the \textit{Early} nowcast is a sparse-information problem, and penalization helps identify the most useful fast indicators without producing an unstable saturated regression. The nonlinear ML models, especially \texttt{RandomForest} and \texttt{GradientBoosting}, do not dominate the benchmark tables, which is consistent with the small-sample nature of the Armenian GDP application. Their flexibility is not enough to offset limited historical depth and abrupt regime changes. The \texttt{Huber} specification likewise remains diagnostic rather than operational, because robust loss on its own does not solve the information-availability problem.
+
+The combination and shock-adjusted models represent the strongest practical contribution of the thesis. \texttt{StackingNowcast} is the best operational model because it combines structural and ML signals without committing to a single specification across all regimes. \texttt{AdaptiveEnsemble} and \texttt{ShockSwitch} remain useful regime-aware combinations, but they do not outperform the stacking meta-learner on average. Most importantly, the shock-adjusted models show where targeted correction is actually needed. \texttt{DFMShockAdjusted} repairs the structural factor benchmark once \textit{Mid} and \textit{Late} information becomes available, while \texttt{EarlyShockAdjusted} is the key month-1 crisis benchmark that addresses the most difficult failure in the sample.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.88\textwidth]{selected_model_bias_profile.png}
+    \caption{Bias profile of selected benchmark models by stage. Positive residuals indicate underprediction and negative residuals indicate overprediction because the residual is defined as actual minus prediction. The figure is useful for identifying which models fail because they are too optimistic and which fail because they react too slowly to new information.}
+    \label{fig:bias_profile}
+\end{figure}
+
+Figure~\ref{fig:bias_profile} helps interpret the ranking tables more carefully. The raw \texttt{DFM} and \texttt{AR} benchmarks show the strongest negative residuals, meaning that they tend to overpredict GDP during difficult episodes. By contrast, \texttt{StackingNowcast} and \texttt{ElasticNet} stay much closer to zero bias, while \texttt{DFMShockAdjusted} visibly reduces the structural overprediction problem in \textit{Mid} and \textit{Late}.
+
+\subsection{Forecast Revision Dynamics}
+
+Average error metrics do not fully describe how the forecasting system behaves over time. It is also useful to examine the full cloud of nowcasts as it evolves across quarters. The spaghetti chart below does that by plotting many model-stage nowcasts as thin lines and then highlighting the ensemble mean, the adaptive comparator path, and the realized GDP path.
+
+Two points stand out in this figure. First, in normal quarters the highlighted nowcasts cluster fairly tightly around realized GDP, which implies limited model disagreement when the macroeconomic environment is stable. Second, in shock quarters the fan of predictions widens considerably, especially around 2020 Q2 and the later Russia-related adjustment period. This confirms that the largest nowcast errors arise when the information set is sparse and the economy is undergoing abrupt change. In other words, the Armenian nowcasting problem is both stage-dependent and regime-dependent.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.88\textwidth]{adaptive_ensemble_spaghetti.png}
+    \caption{Ensemble-style spaghetti chart for Armenian GDP nowcasting. Thin gray lines show individual model-stage nowcasts across target quarters, while the highlighted lines show the ensemble mean, the \texttt{AdaptiveEnsemble} paths by information stage, the realized GDP path, and the sample mean. The figure illustrates both the dispersion of model-based nowcasts and the way forecasts cluster around the realized GDP trajectory outside the most difficult shock quarters.}
+    \label{fig:spaghetti_nowcast}
+\end{figure}
+
+Figure~\ref{fig:spaghetti_nowcast} adds an ensemble perspective to the chapter. The model's average performance is not simply the result of one favorable stage or one unusual quarter. Instead, the chart shows the broader cloud of nowcasts produced by competing specifications and highlights how the preferred operational model evolves relative to the ensemble mean and the realized GDP path. At the same time, the wider divergence around quarters such as 2020 Q2 makes clear why targeted early-shock correction remains necessary.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.88\textwidth]{stage_winner_small_multiples.png}
+    \caption{Best-performing model by stage across the full sample. The figure shows the realized GDP path against the winning specification in \textit{Early}, \textit{Mid}, and \textit{Late}. This makes the stage-dependent nature of the final system visually explicit.}
+    \label{fig:stage_winners}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.82\textwidth]{model_ranking_heatmap.png}
+    \caption{Heatmap of model ranking by information stage. Lower MAPE values indicate stronger performance. The visual compactly shows that model dominance changes across stages and that no single baseline wins everywhere.}
+    \label{fig:ranking_heatmap}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.88\textwidth]{family_shock_nonshock.png}
+    \caption{Shock and non-shock accuracy by model family. The figure highlights that combination models are the most robust family overall, while structural and pure ML families are more stage-dependent under crisis conditions.}
+    \label{fig:family_shock_nonshock}
+\end{figure}
+
+The remaining visual diagnostics complement the main tables by showing information availability, uncertainty, family-level behavior, and the direct tracking performance of the preferred operational model.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.88\textwidth]{focus_2020q2_information_set.png}
+    \caption{Information-set composition for 2020 Q2. The \textit{Early} stage contains no same-quarter official monthly series, while \textit{Mid} introduces the first official monthly release and \textit{Late} adds fuller within-quarter coverage of the same series.}
+    \label{fig:info_2020q2}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.88\textwidth]{release_calendar_information_flow.png}
+    \caption{Release calendar and information flow across the quarter. The figure illustrates the methodological logic of the framework: the \textit{Early} stage relies mainly on fast indicators, \textit{Mid} adds the first official monthly release, and \textit{Late} benefits from fuller within-quarter coverage of the official monthly indicators.}
+    \label{fig:release_calendar}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.88\textwidth]{forecast_uncertainty_bands.png}
+    \caption{Forecast uncertainty bands for the preferred late-stage model. The 50\% and 90\% empirical intervals show that the framework produces not only point nowcasts but also uncertainty assessments.}
+    \label{fig:uncertainty_bands}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.88\textwidth]{model_family_comparison.png}
+    \caption{Comparison of structural, machine-learning, and combination model families. The figure shows that combination models dominate on average, which supports the choice of \texttt{StackingNowcast} as the preferred operational specification in the refreshed run.}
+    \label{fig:model_family}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.88\textwidth]{backtest_best_late_model.png}
+    \caption{Actual GDP growth and the preferred late-stage operational model. The \texttt{StackingNowcast} path tracks the realized GDP series closely while remaining stable during both normal and shock periods.}
+    \label{fig:best_late_model}
+\end{figure}
+
+Figure~\ref{fig:info_2020q2} helps explain why the month-1 crisis case is so difficult. In 2020 Q2 \textit{Early}, the model had to rely on fast market and search-based information because no same-quarter official monthly activity indicators had yet been released.
+
+Figure~\ref{fig:release_calendar} acts as the methodological bridge between the data and results sections. It explains why the same economy may require different model classes at different points within the same quarter.
+
+Figure~\ref{fig:uncertainty_bands} adds an important central-bank-style dimension to the analysis. A nowcast is not only a point estimate; it also carries uncertainty. Including that uncertainty makes the empirical discussion more complete.
+
+\section{Forward GDP Projection Through 2026 Q4}
+
+The pseudo real-time nowcasting system described in this chapter is evaluated through the latest quarter for which the workbook contains realized GDP, namely \textbf{2026 Q1}. To extend the analysis beyond the nowcast sample, a separate short-horizon quarterly forecasting exercise was run using the same historical quarterly database. This forward exercise is not a same-quarter nowcast, because for \textbf{2026 Q2--2026 Q4} the model no longer observes contemporaneous within-quarter releases. Instead, it produces recursive quarter-ahead forecasts conditional on the information available at the end of \textbf{2026 Q1}.
+
+Four compact forecasting specifications were compared in recursive backtests over historical data: \texttt{Ridge}, \texttt{RandomForest}, \texttt{StackingForecast}, and \texttt{ElasticNet}. The preferred forward model was \texttt{Ridge}, which achieved the lowest average recursive MAPE across the 1- to 3-quarter-ahead horizons. Importantly, this result is not driven by every horizon separately: \texttt{RandomForest} is slightly stronger at horizon 1, but \texttt{Ridge} is more stable at horizons 2 and 3 and therefore wins on average. The resulting point forecasts indicate a mild softening of Armenian GDP growth after \textbf{2026 Q1}, followed by broad stabilization close to the 104--105 range of the GDP year-on-year index.
+
+\begin{table}[H]
+    \centering
+    \small
+    \caption{Recursive quarterly forecast model comparison (MAPE, \%). The preferred model is selected by the average across horizons 1 to 3.}
+    \label{tab:forward_model_scores}
+    \begin{tabular}{lcccc}
+        \hline
+        Model & Horizon 1 & Horizon 2 & Horizon 3 & Average 1--3 \\
+        \hline
+        \texttt{Ridge} & 3.271 & 3.868 & 3.988 & 3.709 \\
+        \texttt{RandomForest} & 3.156 & 3.981 & 4.319 & 3.819 \\
+        \texttt{StackingForecast} & 3.306 & 4.268 & 4.321 & 3.965 \\
+        \texttt{ElasticNet} & 3.723 & 4.124 & 4.191 & 4.012 \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\begin{table}[H]
+    \centering
+    \small
+    \caption{Forward GDP projection through 2026 Q4 based on the information set available at the end of 2026 Q1. The intervals are empirical bands derived from historical recursive forecast errors of the selected \texttt{Ridge} model.}
+    \label{tab:forward_forecast_2026}
+    \begin{tabular}{lcccccc}
+        \toprule
+        Quarter & Horizon & Forecast & 50\% Low & 50\% High & 90\% Low & 90\% High \\
+        \midrule
+        2026 Q2 & 1 & 105.105 & 102.866 & 107.343 & 97.276 & 112.933 \\
+        2026 Q3 & 2 & 104.250 & 101.811 & 106.688 & 95.420 & 113.080 \\
+        2026 Q4 & 3 & 104.096 & 101.459 & 106.732 & 93.606 & 114.585 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+Table~\ref{tab:forward_forecast_2026} should be interpreted carefully. The point forecasts are informative, but the uncertainty bands widen with the horizon, which is exactly what one would expect once the system moves from nowcasting into true forecasting. The results therefore suggest \textit{moderate deceleration rather than collapse}, but they should be read as conditional projections rather than as deterministic statements about realized GDP.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.90\textwidth]{future_gdp_forecast_dark.png}
+    \caption{Forward projection of Armenian GDP through 2026 Q4. The white line shows the recent realized GDP path, the blue diamonds show the recursive forecasts from the selected \texttt{Ridge} model, and the shaded bands show empirical 50\% and 90\% forecast intervals.}
+    \label{fig:forward_forecast_2026}
+\end{figure}
+
+Figure~\ref{fig:forward_forecast_2026} complements the backtest figures by shifting from evaluation to projection. Its substantive message is straightforward: conditional on the information available by the end of \textbf{2026 Q1}, the most likely path is one of continued positive but somewhat cooler GDP growth in the remaining quarters of 2026. In practical terms, this means the thesis not only identifies the best stage-dependent nowcasting framework for Armenia, but also produces an internally consistent short-horizon projection once the nowcast sample ends.
+\chapter{Conclusion}
+
+This thesis examined Armenia's recent growth dynamics from two linked perspectives. The first was a high-frequency macroeconomic reading of the economy through external, real-sector, labor-market, fiscal, and financial indicators. The second was a pseudo real-time nowcasting framework designed to estimate current-quarter GDP growth before the publication of official national accounts. Taken together, these two parts answer the same broader question: whether Armenia's post-2022 expansion should be interpreted as a durable structural shift or as a more temporary configuration supported by favorable but potentially unstable conditions.
+
+The empirical evidence supports a balanced conclusion. Armenia remained resilient through 2026 Q1, but that resilience was uneven in composition. Construction, urban real estate, selected services, and ICT remained central drivers of activity. Labor-market conditions stayed relatively tight, inflation was contained, and the external environment continued to provide support through remittances, tourism, and service exports. At the same time, the analysis repeatedly showed concentration risk: growth was not broad-based enough to justify an unqualified structural-boom interpretation, and several of the strongest near-term supports remained vulnerable to external normalization, financial concentration, and demand rebalancing.
+
+The nowcasting chapter strengthens that broader macroeconomic interpretation. It shows that Armenian GDP can be tracked credibly in real time, but only if model choice reflects the information stage and the possibility of abrupt regime change. In the refreshed benchmark run, \texttt{StackingNowcast} is the best operational specification across all stages (Early 2.382\%, Mid 2.369\%, Late 1.875\%, average 2.209\%). At the same time, this does not remove the need for targeted crisis repair: \texttt{EarlyShockAdjusted} remains the relevant benchmark for the hardest month-1 collapse case (2020 Q2 Early), while \texttt{DFM} remains the most theory-grounded structural benchmark.
+
+One of the central contributions of the thesis is therefore methodological as well as substantive. For Armenia, alternative data sources are not decorative additions to a conventional macro framework. They are most valuable precisely where the real-time policy problem is hardest: at the start of the quarter, when the official information set is incomplete and the economy may already be changing direction. The evidence suggests that fast market variables do most of the heavy lifting in that setting, while the Google Trends composite block adds only a modest and statistically weak incremental gain. The newer administrative fintech indicators, such as payment-card and e-money proxies, are more useful as structural context than as a dramatic standalone breakthrough. Exchange-rate movements, commodity prices, search intensity, remittance dynamics, tourism flows, payment behavior, and fast monthly sector indicators therefore improve the timing and realism of the nowcast when conventional quarterly GDP is still unavailable, but not all alternative sources contribute equally.
+
+The main policy implication follows directly from this combined evidence. Armenia's short-term outlook should be viewed as favorable but conditional. A constructive baseline is justified, yet it should be paired with caution about concentration in construction-led demand, macro-financial exposure, and the dependence of headline growth on a relatively narrow set of channels. The forward projection through 2026 Q4 points to moderate deceleration rather than collapse, with point forecasts of 105.444 for 2026 Q2, 104.446 for 2026 Q3, and 104.206 for 2026 Q4. In that sense, the most important result of the thesis is not a single forecast number. It is the demonstration that timely, stage-aware, and shock-sensitive monitoring can distinguish between strong growth, imbalanced growth, and genuinely durable structural strengthening.
+
+Overall, the thesis concludes that Armenia's economy during the period studied was neither fragile in a simple sense nor fully transformed. It was undergoing real-time restructuring under unusually complex conditions. A framework that combines conventional indicators with alternative data sources is therefore essential both for practical nowcasting and for a more credible interpretation of what current GDP growth actually means.
+
+\renewcommand{\bibname}{References}
+\cleardoublepage
+\phantomsection
+\addcontentsline{toc}{chapter}{References}
+\begin{thebibliography}{99}
+
+\bibitem{Anesti2020}
+Anesti, N., Galv\~{a}o, A. B., \& Miranda-Agrippino, S. (2020).
+\href{https://www.bankofengland.co.uk/-/media/boe/files/working-paper/2018/uncertain-kingdom-nowcasting-gdp-and-its-revisions.pdf}{\textit{Uncertain Kingdom: Nowcasting GDP and its Revisions}}.
+Bank of England, Staff Working Paper No.\ 764.
+
+\bibitem{adbADO2024}
+Asian Development Bank.
+\href{https://www.adb.org/sites/default/files/publication/957856/asian-development-outlook-april-2024.pdf}{\textit{Asian Development Outlook, April 2024}}.
+
+\bibitem{Bok2017}
+Bok, B., Caratelli, D., Giannone, D., Sbordone, A., \& Tambalotti, A. (2017).
+\href{https://www.newyorkfed.org/medialibrary/media/research/staff_reports/sr830.pdf}{\textit{Macroeconomic Nowcasting and Forecasting with Big Data}}.
+Federal Reserve Bank of New York, Staff Report No.\ 830.
+
+\bibitem{cbaMPR2025Q1}
+Central Bank of Armenia.
+\href{https://www.cba.am/file_manager/Inflation-reports./MPR_2025Q1_Eng.pdf}{\textit{Monetary Policy Outlook 2025 Q1}}.
+March 2025.
+
+\bibitem{cbaImpl2025}
+Central Bank of Armenia.
+\href{https://www.cba.am/en/reports/8463}{\textit{Monetary Policy Program Implementation Report (Q2 2024--Q1 2025)}}.
+May 2025.
+
+\bibitem{Giannone2008}
+Giannone, D., Reichlin, L., \& Small, D. (2006).
+\href{https://www.ecb.europa.eu/pub/pdf/scpwps/ecbwp633.pdf}{\textit{Nowcasting: The real-time informational content of macroeconomic data}}.
+European Central Bank Working Paper No.\ 633.
+
+\bibitem{imfCR24348}
+International Monetary Fund.
+\href{https://www.imf.org/en/Publications/CR/Issues/2024/12/17/Republic-of-Armenia-Fourth-Review-Under-the-Stand-By-Arrangement-and-Request-for-559673}{\textit{Republic of Armenia: Fourth Review Under the Stand-By Arrangement and Request for Modifications of Performance Criterion and Monetary Policy Consultation Clause}}.
+IMF Country Report No. 24/348, December 2024.
+
+\bibitem{NetherlandsDNB2022}
+Kant, D., Pick, A., \& de Winter, J. (2022).
+\href{https://www.dnb.nl/media/kq4pe4cr/working_paper_no_754.pdf}{\textit{Nowcasting GDP using machine learning methods}}.
+De Nederlandsche Bank Working Paper No.\ 754.
+
+\bibitem{US2022}
+Kohns, D., \& Bhattacharjee, A. (2022).
+\href{https://arxiv.org/abs/2011.00938}{\textit{Nowcasting Growth using Google Trends Data: A Bayesian Structural Time Series Model}}.
+arXiv:2011.00938v2.
+
+\bibitem{Georgia2022}
+Mgebrishvili, M. (2022).
+\href{https://drive.google.com/file/d/118GZO60e9TBU52rk-vnPM0KlXjtRH4S2/view?usp=sharing}{\textit{Nowcasting with high frequency data, Google trends and machine learning}}.
+Ministry of Finance of Georgia, Working Paper WP 01/2022.
+
+\bibitem{minfinBudget}
+Ministry of Finance of the Republic of Armenia.
+\href{https://www.minfin.am/en/page/budget/}{\textit{State Budget}}.
+
+\bibitem{armstatbank}
+Statistical Committee of the Republic of Armenia.
+\href{https://statbank.armstat.am/pxweb/en/ArmStatBank/}{\textit{ArmStatBank}}.
+
+\bibitem{Peru2024}
+Tenorio, J., \& Perez, W. (2024).
+\href{https://drive.google.com/file/d/1tIbCTI5vBiTK9OfBZ8C-3nT4Bnhuco1d/view?usp=sharing}{\textit{Monthly GDP nowcasting with Machine Learning and Unstructured Data}}.
+arXiv:2402.04165v1.
+
+\bibitem{ArmeniaBelarus2024}
+Tsukarev, T., Poghosyan, K., Lemba, K., \& Grishin, D. (2024).
+\href{https://efsd.org/upload/iblock/0f4/hwg0io77bdcni8o7z0qmqjlpu7zagtpo/GDP-NOWCASTING-FROM-TRADITIONAL-ECONOMETRIC-MODELS-TO-MACHINE-LEARNING-ALGORITHMS.pdf}{\textit{GDP Nowcasting: From Traditional Econometric Models to Machine Learning Algorithms}}.
+Eurasian Fund for Stabilization and Development, Working Paper WP/25/1.
+
+\bibitem{wbCPF2025}
+World Bank.
+\href{https://www.worldbank.org/en/news/press-release/2025/01/21/world-bank-group-to-support-job-creation-and-resilience-in-armenia}{\textit{World Bank Group to Support Job Creation and Resilience in Armenia}}.
+January 21, 2025.
+
+\bibitem{wbMEU2024}
+World Bank.
+\href{https://thedocs.worldbank.org/en/doc/6b97e748ad629581293fc77a1a9030d5-0080012024/original/ARM-MEU-JAN-2024-Eng.pdf}{\textit{Armenia Monthly Economic Update -- January 2024}}.
+
+\bibitem{wbMEU2025}
+World Bank.
+\href{https://thedocs.worldbank.org/en/doc/31d4fb42e3f938e12830d2f6339c17fa-0080062025/original/ARM-MEU-FEB-2025-en.pdf}{\textit{Armenia Monthly Economic Update -- February 2025}}.
+
+\bibitem{wbPER2023}
+World Bank.
+\href{https://www.worldbank.org/en/news/press-release/2023/11/09/a-new-report-by-the-world-bank-offers-a-roadmap-for-improving-public-spending-efficiency-in-armenia}{\textit{A New Report by the World Bank Offers a Roadmap for Improving Public Spending Efficiency in Armenia}}.
+November 9, 2023.
+
+\bibitem{wbPulse2025}
+World Bank.
+\href{https://www.worldbank.org/en/country/armenia/publication/armenia-economic-pulse-fairer-markets-for-inclusive-growth}{\textit{Armenia's Economic Pulse: Fairer Markets for Inclusive Growth}}.
+
+\bibitem{wbTourism2025}
+World Bank.
+\href{https://www.worldbank.org/en/news/press-release/2025/04/17/armenia-to-create-jobs-attract-private-investment-through-stronger-local-tourism-infrastructure}{\textit{Armenia to Create Jobs, Attract Private Investment through Stronger Local Tourism Infrastructure}}.
+April 17, 2025.
+
+\bibitem{wbTrade2024}
+World Bank.
+\href{https://www.worldbank.org/en/news/factsheet/2024/11/07/armenia-trade-competitiveness-diagnostic}{\textit{Armenia Trade Competitiveness Diagnostic}}.
+November 7, 2024.
+
+\end{thebibliography}
+
+\end{document}

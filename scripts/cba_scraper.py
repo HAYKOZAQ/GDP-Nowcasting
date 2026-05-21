@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 import os
 
 # Configuration
-BASE_DIR = 'D:/DATA/GDP_NOWCASTING_DASHBOARD'
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA_RAW_DIR = os.path.join(BASE_DIR, 'data_raw')
 os.makedirs(DATA_RAW_DIR, exist_ok=True)
 

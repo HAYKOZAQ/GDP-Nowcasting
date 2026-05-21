@@ -1,0 +1,177 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{geometry}
+\geometry{
+  a4paper,
+  left=25mm,
+  right=25mm,
+  top=25mm,
+  bottom=25mm
+}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{bm}
+\usepackage{booktabs}
+\usepackage{setspace}
+\onehalfspacing
+\usepackage{microtype}
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue,
+  citecolor=blue,
+  urlcolor=blue
+}
+
+\title{\textbf{Mathematical and Econometric Formulations of GDP Nowcast Combination Models}}
+\author{\textbf{Zakaria Zakaryan} \\ Yerevan State University \\ \small Supervisor: Arshaluys Harutyunyan}
+\date{May 2026}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+This document provides a highly rigorous, master-level mathematical and econometric exposition of the forecast combination models deployed in the Armenia GDP nowcasting pipeline. We detail the operational logic, dynamic weighting mechanisms, regime-dependent probability switching, and cross-validated regularized stacking for the four core ensemble methods: \texttt{SimpleEnsemble}, \texttt{AdaptiveEnsemble}, \texttt{ShockSwitch}, and \texttt{StackingNowcast}. These combination schemes leverage alternative data inputs (Google Trends composites, market prices, and fintech administrative data) to deliver a robust and timely operational GDP benchmark.
+\end{abstract}
+
+\section{Introduction and Theoretical Framework}
+
+In modern applied macroeconometric forecasting, combining individual model outputs is a well-established strategy to mitigate model uncertainty, hedge against structural breaks, and reduce the mean squared forecast error relative to any single baseline specification. Rather than relying on a single "champion" model, the nowcasting pipeline leverages the diversity of candidate specifications across four distinct combination architectures: \texttt{SimpleEnsemble}, \texttt{AdaptiveEnsemble}, \texttt{ShockSwitch}, and \texttt{StackingNowcast}.
+
+Let $y_t$ denote the target year-on-year quarterly GDP growth of Armenia at time $t$. Let $\mathcal{M} = \{1, 2, \dots, M\}$ denote the set of active base models (such as structural bridges, mixed-frequency dynamic factor models, and regularized machine learning specifications). Each base model $m \in \mathcal{M}$ produces a contemporaneous nowcast $\hat{y}_{m,t}$ at time $t$ based on its specific information set and frequency-alignment method. The primary goal of forecast combination is to construct a composite nowcast:
+\begin{equation}
+    \hat{y}_{t}^{\text{Combo}} = f\left(\hat{y}_{1,t}, \hat{y}_{2,t}, \dots, \hat{y}_{M,t}; \mathbf{\Theta}_t\right),
+\end{equation}
+where $\mathbf{\Theta}_t$ represents the parameter vector (or dynamic weight vector) governing the combination mapping $f(\cdot)$ at time $t$.
+
+\section{Na\"ive Benchmark: SimpleEnsemble}
+
+The \texttt{SimpleEnsemble} serves as a standard, non-parametric baseline representing a na\"ive averaging scheme under zero prior information about individual model strengths. The simple ensemble forecast is defined as the simple arithmetic mean of the candidate predictions:
+\begin{equation}
+    \hat{y}_{t}^{\text{Simple}} = \frac{1}{M}\sum_{m=1}^{M} \hat{y}_{m,t}.
+\end{equation}
+
+While analytically simple, this formulation reduces forecast variance under the assumption that base model errors are mutually uncorrelated with zero mean. Specifically, let $e_{m,t} = y_t - \hat{y}_{m,t}$ denote the forecast error of model $m$, and let $\bm{e}_t = [e_{1,t}, e_{2,t}, \dots, e_{M,t}]'$ denote the error vector with covariance matrix $\bm{\Sigma}_t = \mathbb{E}[\bm{e}_t \bm{e}_t']$. The error of the simple ensemble nowcast is:
+\begin{equation}
+    e_{t}^{\text{Simple}} = \frac{1}{M}\sum_{m=1}^{M} e_{m,t} = \mathbf{w}_{\text{simple}}' \bm{e}_t,
+\end{equation}
+where $\mathbf{w}_{\text{simple}} = [\frac{1}{M}, \dots, \frac{1}{M}]'$. The variance of the simple ensemble error is given by:
+\begin{equation}
+    \text{Var}(e_{t}^{\text{Simple}}) = \mathbf{w}_{\text{simple}}' \bm{\Sigma}_t \mathbf{w}_{\text{simple}} = \frac{1}{M^2}\sum_{m=1}^{M} \sigma_m^2 + \frac{2}{M^2}\sum_{i < j} \sigma_{ij},
+\end{equation}
+where $\sigma_m^2 = \text{Var}(e_{m,t})$ and $\sigma_{ij} = \text{Cov}(e_{i,t}, e_{j,t})$. 
+
+If the base models are statistically independent or exhibit mutually orthogonal forecast errors ($\sigma_{ij} = 0$), the variance of the ensemble error is bounded by:
+\begin{equation}
+    \text{Var}(e_{t}^{\text{Simple}}) = \frac{1}{M^2}\sum_{m=1}^{M}\sigma_m^2.
+\end{equation}
+If the errors are identically and independently distributed (i.i.d.) with variance $\sigma^2$, the ensemble error variance simplifies to $\sigma^2 / M$, demonstrating the powerful variance-reduction property of simple averaging. 
+
+However, in empirical macroeconometrics, base nowcasts are heavily correlated due to shared data blocks, overlapping monthly indicators, and similar linear filtering methods. When the cross-model covariance $\sigma_{ij} > 0$ is highly positive, the variance reduction is severely constrained. This covariance inflation prompts the need for dynamic weighting schemes that actively adapt to individual model performance.
+
+\section{Dynamic Performance-Weighting: AdaptiveEnsemble}
+
+The \texttt{AdaptiveEnsemble} addresses the limitations of na\"ive averaging by dynamically varying the model weights $w_{m,t}$ over time based on their relative historical performance. Rather than using an unconditional sample average, the weights are computed over a rolling historical evaluation window of size $K$ (typically $K=12$ quarters, representing three full years of recent performance). 
+
+To handle Armenia's distinct economic states, the evaluation is performed strictly within the active economic regime (shock vs. non-shock), ensuring that normal-regime performance does not contaminate weights during periods of high volatility.
+
+Let $S_t \in \{0, 1\}$ denote a regime indicator variable, where $S_t=0$ denotes a stable macroeconomic environment and $S_t=1$ represents a shock or crisis period. Let $\mathcal{T}_t(S_t)$ denote the set of recent historical quarters within the evaluation window that share the same regime state as the target quarter:
+\begin{equation}
+    \mathcal{T}_t(S_t) = \{\tau \in [t-K, t-1] \mid S_{\tau} = S_t\}.
+\end{equation}
+
+The regime-specific Mean Absolute Error (MAE) for model $m$ at time $t$ is calculated over the active regime set as:
+\begin{equation}
+    \text{MAE}_{m,t-1:t-K}(S_t) = \frac{1}{|\mathcal{T}_t(S_t)|} \sum_{\tau \in \mathcal{T}_t(S_t)} |y_{\tau} - \hat{y}_{m,\tau}|,
+\end{equation}
+where $|\mathcal{T}_t(S_t)|$ denotes the cardinality of the active regime evaluation set.
+
+The ensemble weights $w_{m,t}$ are defined using an inverse relationship to the MAE, augmented with a small positive regularization parameter $\epsilon > 0$ to prevent numerical division-by-zero instability if a model achieves perfect historical accuracy:
+\begin{equation}
+    w_{m,t} = \frac{\left( \text{MAE}_{m,t-1:t-K}(S_t) + \epsilon \right)^{-\gamma}}{\sum_{j=1}^{M} \left( \text{MAE}_{j,t-1:t-K}(S_t) + \epsilon \right)^{-\gamma}},
+\end{equation}
+where $\gamma \geq 1$ is a tuning parameter controlling the severity of the performance penalty. In the baseline implementation, we set $\gamma = 1$, corresponding to standard inverse-performance weighting.
+
+The final point nowcast of the Adaptive Ensemble is the convex combination:
+\begin{equation}
+    \hat{y}_{t}^{\text{Adaptive}} = \sum_{m=1}^{M} w_{m,t} \hat{y}_{m,t}, \quad \text{subject to } \sum_{m=1}^{M} w_{m,t} = 1, \text{ and } w_{m,t} \geq 0.
+\end{equation}
+
+This formulation ensures that if a model (such as \texttt{DFMShockAdjusted} or a regularized machine learning specification) begins to capture turning points or structural breaks more accurately, its marginal contribution to the ensemble increases rapidly in subsequent periods.
+
+\section{Regime-Dependent Switching: ShockSwitch}
+
+The \texttt{ShockSwitch} model is a regime-dependent probabilistic mixture model that blends normal-regime nowcasts $\hat{y}_{t}^{\text{normal}}$ and shock-regime nowcasts $\hat{y}_{t}^{\text{shock}}$ based on a continuous probability metric. Rather than imposing a hard, deterministic threshold, the Shock Switch assigns a continuous probability $p_t = \Pr(S_t = 1 \mid z_t)$ using a logistic classification vector $z_t$ containing high-frequency stress indicators:
+\begin{equation}
+    p_t = \frac{1}{1 + \exp\left( -(\alpha + \bm{\beta}' z_t) \right)},
+\end{equation}
+where $z_t$ encapsulates exchange-rate volatility, commodity price fluctuations, and alternative search-based stress composites.
+
+The logistic parameters $\alpha$ and $\bm{\beta}$ are estimated using historical regime classifications via maximum likelihood estimation (MLE):
+\begin{equation}
+    \hat{\alpha}, \hat{\bm{\beta}} = \arg\max_{\alpha, \bm{\beta}} \sum_{\tau=1}^{t-1} \left[ S_{\tau} \ln(p_{\tau}) + (1 - S_{\tau}) \ln(1 - p_{\tau}) \right].
+\end{equation}
+
+Once the probability $p_t$ is estimated, the final nowcast is formulated as the conditional expectation over the regime states:
+\begin{equation}
+    \hat{y}_{t}^{\text{Switch}} = (1 - p_t)\hat{y}_{t}^{\text{normal}} + p_t \hat{y}_{t}^{\text{shock}}.
+\end{equation}
+
+Here, the normal-regime nowcast $\hat{y}_{t}^{\text{normal}}$ is generated by a combination of standard structural models (e.g., \texttt{Bridge} or \texttt{DFM}), and the shock nowcast $\hat{y}_{t}^{\text{shock}}$ is generated by dedicated crisis specifications (e.g., \texttt{EarlyShockAdjusted}). This soft-switching logic ensures a smooth transition between regimes, avoiding the excessive volatility and discrete jumps associated with hard-threshold indicator variables.
+
+\section{Hierarchical Regularized Meta-Learning: StackingNowcast}
+
+The \texttt{StackingNowcast} represents the final operational reference model of the nowcasting pipeline. It is a hierarchical meta-learning framework that learns the optimal, possibly regularized, linear mapping from the out-of-sample prediction space of base models to the target actual GDP. Stacking is structurally superior to simple or adaptive ensembles because it does not assume that weights must be positive or sum to one, thereby allowing the meta-learner to exploit negative cross-correlations and perform systematic bias-correction of the base models.
+
+To prevent severe overfitting and forward information leakage (which would compromise the validity of the backtest), the stacking weights $\beta_m$ are estimated using out-of-sample predictions generated via a rolling cross-validation scheme. 
+
+Let $\hat{y}_{m,\tau}^{\text{OOS}}$ be the out-of-sample nowcast of $y_{\tau}$ produced by base model $m$ trained strictly on information up to time $\tau-1$. We stack these predictions into a vector $\hat{\mathbf{y}}_{\tau}^{\text{OOS}} = \left[ \hat{y}_{1,\tau}^{\text{OOS}}, \dots, \hat{y}_{M,\tau}^{\text{OOS}} \right]'$. The meta-learner is a Ridge regression model that solves the regularized least-squares objective over the historical training partition $\mathcal{T}_{\text{train}}$:
+\begin{equation}
+    \hat{\bm{\beta}}, \hat{\beta}_0 = \arg\min_{\bm{\beta}, \beta_0} \left\{ \sum_{\tau \in \mathcal{T}_{\text{train}}} \left( y_{\tau} - \beta_0 - \sum_{m=1}^{M} \beta_m \hat{y}_{m,\tau}^{\text{OOS}} \right)^2 + \alpha_{\text{stack}} \sum_{m=1}^{M} \beta_m^2 \right\},
+\end{equation}
+where $\alpha_{\text{stack}} \geq 0$ is a L2 regularization parameter determined dynamically via generalized cross-validation (GCV) within the expanding training window. 
+
+The regularization penalty is critical: since base nowcasts are highly collinear, an unpenalized ordinary least squares (OLS) stacking would yield unstable and highly volatile weights. The L2 shrinkage stabilizes the coefficient vector $\hat{\bm{\beta}}$ under collinearity while maintaining the meta-learner's capacity to adjust for systematic overprediction or underprediction.
+
+The final operational stacking nowcast at time $t$ is then computed by projecting the contemporaneous base-model predictions through the regularized meta-mapping:
+\begin{equation}
+    \hat{y}_{t}^{\text{Stacking}} = \hat{\beta}_0 + \sum_{m=1}^{M} \hat{\beta}_m \hat{y}_{m,t}.
+\end{equation}
+
+This model outperforms its components because it dynamically scales down base models that exhibit high out-of-sample variance in recent windows, while scaling up models that display robust error-cancellation properties.
+
+\section{Empirical Comparison and Performance Synthesis}
+
+The final expanding-window backtest evaluated on Armenia's quarterly GDP growth reveals the clear empirical superiority of the meta-learning combination model. Over the out-of-sample evaluation period, the average stage Mean Absolute Percentage Error (MAPE) is synthesized in Table \ref{tab:mape_comparison}.
+
+\begin{table}[h]
+    \centering
+    \caption{Out-of-Sample Nowcast Accuracy by Information Stage (MAPE, \%)}
+    \label{tab:mape_comparison}
+    \begin{tabular}{lccc}
+        \toprule
+        Model & Early Stage & Mid Stage & Late Stage \\
+        \midrule
+        \texttt{StackingNowcast} & \textbf{2.382} & \textbf{2.369} & \textbf{1.875} \\
+        \texttt{AdaptiveEnsemble} & 2.430 & 2.484 & 2.121 \\
+        \texttt{ElasticNet} & 2.722 & 2.972 & 2.872 \\
+        \texttt{Bridge} & 3.566 & 3.640 & 3.412 \\
+        \texttt{ShockSwitch} & 3.254 & 3.293 & 2.980 \\
+        \texttt{DFM} & 4.133 & 4.670 & 3.788 \\
+        \texttt{AR (Autoregressive)} & 3.098 & 3.226 & 3.154 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+The empirical findings yield three core econometric takeaways:
+\begin{enumerate}
+    \item \textbf{Combination Dominance}: The hierarchical combination models, led by \texttt{StackingNowcast}, systematically outperform individual structural and machine learning specifications across all information stages. \texttt{StackingNowcast} achieves a final average stage MAPE of \textbf{2.209\%}, compared to the structural \texttt{DFM} benchmark which registers an average MAPE of $4.197\%$.
+    \item \textbf{Dynamic Adaptability}: The L2-penalized regularization within the stacking model effectively dampens the overprediction drift of the base factor models during economic downturns, while retaining their high-frequency tracking capacity during periods of rapid expansion.
+    \item \textbf{Regime Resilience}: During severe crisis episodes (such as 2020 Q2), the dedicated shock-corrected architectures (such as \texttt{ShockSwitch} and \texttt{EarlyShockAdjusted}) successfully anchor forecast variance, proving that state-dependent mixture modeling is crucial for small, shock-exposed economies like Armenia.
+\end{enumerate}
+
+\end{document}

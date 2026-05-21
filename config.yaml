@@ -1,0 +1,29 @@
+# Armenia GDP Nowcasting Hyperparameters
+# Update these parameters to configure the model runs without modifying Python code.
+
+modeling:
+  min_train_quarters: 40
+  target_column: "Real_GDP_Armenia_YoY"
+  workbook_name: "Translated_Cleaned_Nowcasting_Data.xlsx"
+  backtest_dir_name: "backtests"
+  random_state: 42
+  alt_feature_cap: 12
+  factor_feature_cap: 8
+  dfm_min_monthly_observations: 24
+  dfm_min_monthly_coverage: 0.55
+  dfm_history_months: 96
+  dfm_max_monthly_series: 20
+  dfm_reduced_monthly_series: 12
+  
+  # DFM factor configuration
+  dfm_factors: 2
+  dfm_factor_orders: 2
+  dfm_em_maxiter: 100
+  dfm_em_tolerance: 0.0001
+  
+  # Feature selection configuration ("mutual_info" or "correlation")
+  feature_selection_method: "mutual_info"
+  
+  # Hyperparameter tuning configuration
+  optuna_n_trials: 20
+  optuna_timeout_seconds: 45

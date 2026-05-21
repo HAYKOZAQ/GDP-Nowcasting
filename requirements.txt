@@ -1,3 +1,31 @@
+# Unified dependencies for Armenia GDP Nowcasting & Dashboard
+
+# Dashboard & UI
 streamlit
-pandas
 plotly
+
+# Core Data Science
+pandas
+numpy
+openpyxl
+scipy
+statsmodels
+scikit-learn
+matplotlib
+
+# Machine Learning & AI
+torch
+optuna
+lightgbm
+tabpfn
+huggingface-hub
+
+# Data Acquisition
+requests
+yfinance
+wbgapi
+pytrends
+PyPDF2
+beautifulsoup4
+playwright
+pyyaml

@@ -1,7 +1,0 @@
-stage,loss,model_a,model_b,n_obs,mean_loss_a,mean_loss_b,mean_diff_b_minus_a,dm_stat,p_value,significant_10,significant_05,better_model
-Early,squared_error,Base+Google,Base+Market+Google,61,34.559496906956774,22.077468868613497,-12.482028038343275,-1.9498139989934282,0.05587583661309803,True,False,Base+Market+Google
-Early,squared_error,Base,Base+Market,61,30.66527524929385,24.448880974713184,-6.216394274580658,-1.6660348456989154,0.10091952581421659,False,False,Base+Market
-Early,squared_error,Base,Base+Market+Google,61,30.66527524929385,22.077468868613497,-8.587806380680346,-1.301854246976696,0.1979422780533826,False,False,Base+Market+Google
-Early,squared_error,Base+Google,Base+Market,61,34.559496906956774,24.448880974713184,-10.110615932243581,-1.1168144950223293,0.26852607305763976,False,False,Base+Market
-Early,squared_error,Base+Market,Base+Market+Google,61,24.448880974713184,22.077468868613497,-2.3714121060996884,-0.5016842537018061,0.6177256052916977,False,False,Base+Market+Google
-Early,squared_error,Base,Base+Google,61,30.66527524929385,34.559496906956774,3.894221657662926,0.4445931571337318,0.6582134237524337,False,False,Base

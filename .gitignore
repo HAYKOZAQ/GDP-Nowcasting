@@ -3,11 +3,29 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
+*.py[cod]
+*$py.class
+*.so
 .Python
 env/
 venv/
 .env
 .venv
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
 pip-log.txt
 pip-delete-this-directory.txt
 .tox/
@@ -18,18 +36,31 @@ coverage.xml
 *.cover
 .hypothesis/
 .pytest_cache/
+.ruff_cache/
 
 # Streamlit
 .streamlit/
 ! .streamlit/config.toml
 
-# Data (Raw/Intermediate - keeping /data for app)
-data_raw/
-data_scraped/
-data_xlsx/
-figures/
-scripts/
-
 # OS
 .DS_Store
 Thumbs.db
+
+# Modeling Results & Outputs
+results/figures/*.png
+results/predictions/*.csv
+results/backtests/*.csv
+results/forecasts/*.csv
+results/backtests/*.md
+results/forecasts/*.md
+diagnostics.log
+texput.log
+TWO.aux
+TWO.log
+TWO.out
+TWO.pdf
+TWO.toc
+
+# Data caches (if desired)
+# data/raw/
+# data/processed/*.csv

@@ -16,7 +16,7 @@
 
 \title{Advanced Data-Driven Analysis of the Armenian Economy \\ \large Nowcasting Growth, Structural Shifts, and Macroeconomic Stability}
 \author{Master's Thesis}
-\date{2025}
+\date{2026}
 
 \begin{document}
 
@@ -24,7 +24,11 @@
 \tableofcontents
 
 \chapter*{Abstract}
-This thesis examines the short-run performance of the Armenian economy through a high-frequency analytical framework that combines official statistics, administrative indicators, and a custom GDP nowcasting dashboard (accessible at \url{https://haykozaq-gdp-nowcasting-dashboard-ogckd1.streamlit.app/}). The core research question is whether Armenia's post-2022 growth model has shifted from temporary shock-driven expansion toward a more durable structure based on construction, services, and information technology, while preserving macroeconomic stability. The empirical strategy uses monthly and quarterly indicators for commodity prices, tourism, remittances, economic activity, sectoral output, labor market dynamics, inflation, fiscal developments, and banking exposure. Rather than treating the dashboard as a collection of charts, the study organizes these indicators into an integrated interpretation of growth drivers, transmission channels, and vulnerabilities. The results suggest that Armenia entered 2025 with resilient momentum, but the composition of growth became increasingly uneven: construction and urban real estate remained dominant, ICT retained strategic importance, labor market conditions tightened, and fiscal as well as financial concentration risks became more visible. The thesis concludes that Armenia's near-term outlook remains favorable only if rapid sectoral expansion is matched by stronger productivity growth, disciplined macroeconomic management, and a gradual rebalancing away from excessive dependence on construction-led demand.
+This thesis examines how Armenia's current-quarter GDP can be assessed before the publication of official national accounts by combining conventional macroeconomic indicators with alternative data sources. The problem is economically important because Armenia is a small, shock-sensitive open economy in which quarterly GDP is published with a delay, while turning points often emerge first in higher-frequency signals such as exchange rates, commodity prices, search intensity, remittance dynamics, tourism flows, and monthly sector indicators. Against that background, the study develops a GDP nowcasting and high-frequency monitoring framework designed to evaluate how Armenia's post-2022 growth pattern evolved through 2024--2026 Q1 and whether that expansion reflected a durable structural shift or a more temporary, shock-driven adjustment.
+
+The analysis uses monthly and quarterly indicators covering commodity markets, tourism, remittances, economic activity, sectoral output, labor-market conditions, inflation, fiscal developments, and banking exposure. Rather than treating the dashboard as a collection of unrelated charts, the thesis organizes these indicators into a coherent interpretation of growth drivers, transmission channels, and macroeconomic vulnerabilities. It also introduces a stage-based nowcasting framework in which alternative data are especially valuable at the beginning of the quarter, when official same-quarter releases are still limited.
+
+The results suggest that Armenia remained resilient into 2026 Q1, but the composition of growth became increasingly uneven. Construction and urban real estate remained dominant, ICT retained strategic importance, labor-market conditions tightened, and fiscal as well as financial concentration risks became more visible. In the refreshed nowcasting benchmark, \texttt{StackingNowcast} is the strongest operational model across \textit{Early}, \textit{Mid}, and \textit{Late} stages on average, while targeted shock-adjusted specifications remain necessary for extreme month-1 crisis quarters such as 2020 Q2 Early. A separate forward projection for 2026 Q2--Q4 indicates moderate deceleration rather than collapse, with GDP growth stabilizing near the 104--105 range of the year-on-year index. Overall, the thesis concludes that Armenia's near-term outlook remains favorable only if rapid sectoral expansion is matched by stronger productivity growth, disciplined macroeconomic management, and a gradual rebalancing away from excessive dependence on construction-led demand.
 
 \chapter{Introduction}
 \section{Research Motivation}
@@ -36,13 +40,13 @@ The Armenian case is especially important because the rapid expansion observed a
 This thesis addresses the following main research question:
 
 \begin{quote}
-What are the main short-run drivers of Armenian economic growth in 2024--2025, and to what extent can high-frequency indicators nowcast changes in growth, labor-market conditions, and macroeconomic stability?
+What are the main short-run drivers of Armenian economic growth through 2026 Q1, and to what extent can high-frequency indicators nowcast changes in growth, labor-market conditions, and macroeconomic stability while supporting short-horizon forecasts for the remaining quarters of 2026?
 \end{quote}
 
 The study has four objectives:
 \begin{enumerate}
     \item to build an integrated high-frequency view of the Armenian economy using the dashboard indicators;
-    \item to identify the sectors and channels that contributed most to growth normalization in 2024--2025;
+    \item to identify the sectors and channels that contributed most to growth normalization through 2026 Q1;
     \item to assess whether observed growth was balanced across the real, external, labor, fiscal, and financial sectors;
     \item to evaluate the main macroeconomic risks associated with Armenia's current growth model.
 \end{enumerate}
@@ -50,12 +54,27 @@ The study has four objectives:
 \section{Contribution}
 The contribution of the thesis is practical as well as analytical. Practically, it consolidates a fragmented set of official and market indicators into a single dashboard-oriented framework. Analytically, it moves beyond descriptive chart presentation by linking the indicators to an explicit macroeconomic narrative: external shocks affect Armenia through commodity prices, trade, remittances, and exchange rates; these channels influence domestic production, employment, wages, and prices; and the resulting growth pattern shapes fiscal and banking-system exposure.
 
-\section{Structure of the Thesis}
-The remainder of the thesis proceeds as follows. Chapter 2 reviews the conceptual literature on nowcasting and growth analysis in small open economies. Chapter 3 presents the data and methodology behind the dashboard and nowcasting logic. Chapters 4 through 7 analyze Armenia's external sector, real activity, labor market, and macro-financial stability. Chapter 8 integrates the findings into a unified interpretation of Armenia's growth model. Chapter 9 discusses limitations. Chapter 10 concludes.
+More specifically, the thesis makes five distinct contributions. First, it builds an Armenia-focused monitoring system that combines quarterly macro structure, monthly official releases, and high-frequency market and search indicators in one coherent framework. Second, it organizes the empirical evidence by transmission channel rather than by isolated charts, which makes the dashboard chapters and the nowcasting chapter read as parts of the same analytical argument. Third, it shows that construction and real-estate activity were not only major contributors to recent growth, but also the clearest source of concentration risk in the broader macro-financial picture. Fourth, it develops a leakage-safe pseudo real-time nowcasting design with \textit{Early}, \textit{Mid}, and \textit{Late} information stages, so model performance is judged under the same information constraints faced by policymakers. Fifth, it evaluates the marginal role of alternative data and extends the framework into a forward projection for 2026 Q2--Q4, which makes the thesis operational as well as interpretive.
+
+In that sense, the thesis contributes not only a set of charts or model rankings, but also a disciplined interpretation of what recent Armenian growth actually represented: resilient and real, yet increasingly dependent on a narrow construction- and property-linked engine whose sustainability cannot be taken for granted.
 
 \chapter{Literature Review and Analytical Framework}
 \section{Nowcasting in Small Open Economies}
 Nowcasting refers to the estimation of current economic conditions before complete national accounts are released. In the literature, nowcasting methods typically rely on bridge equations, factor models, mixed-frequency regressions, or indicator-based composite systems. Their advantage is timeliness; their weakness is that high-frequency indicators may reflect noise, revisions, or temporary co-movement rather than stable economic relationships.
+
+The modern nowcasting literature usually begins with the ragged-edge information problem formalized by Giannone, Reichlin, and Small. Their contribution was to show that current-quarter GDP can be treated as a filtering problem in which data arrive asynchronously across the quarter rather than as a standard low-frequency forecasting exercise.\citep{Giannone2008} That distinction matters because the practical question is not only which model has the lowest average error, but also how the estimate should be revised when one more monthly release becomes available. In applied terms, nowcasting is therefore a mixed-frequency updating problem rather than just a quarterly regression problem.
+
+Within that broad framework, three methodological families dominate the literature. \textit{Bridge equations} first convert monthly indicators into quarterly summaries and then regress GDP on those aggregates. They are simple and often robust, especially when the number of useful indicators is limited. \textit{MIDAS}-style and other mixed-frequency regressions preserve more of the high-frequency timing structure, while \textit{dynamic factor models} summarize a large panel of monthly series with one or more latent factors that can be updated each time a new data release arrives.\citep{Giannone2008,Bok2017} The appeal of factor methods is that they handle many indicators and ragged-edge missingness in a unified state-space setting; the tradeoff is that they may smooth through abrupt breaks unless the model is augmented or corrected.
+
+Recent work also shows that machine-learning methods are useful but not automatically dominant in macro nowcasting. Bok et al.\ compare a wide range of linear and nonlinear models for U.S.\ GDP and show that no single class wins uniformly across all release vintages and information states.\citep{Bok2017} Kant, Pick, and de Winter reach a similar conclusion for the Netherlands: richer model classes can help, but the operational gains are often modest and sensitive to the evaluation design.\citep{NetherlandsDNB2022} This is particularly relevant for Armenia, where the quarterly sample is small. In such settings, nonlinear methods such as Random Forest and Gradient Boosting may capture interactions, but they also face a real small-sample risk of instability relative to simpler regularized or factor-based benchmarks.
+
+Alternative data add another layer to this literature. Search intensity, card payments, mobility indicators, and web activity can improve nowcasts precisely when the official monthly block is still thin, but their marginal contribution depends heavily on how they are selected, aggregated, and validated. Studies for Peru, Georgia, and the United States show that Google Trends signals can sharpen early-stage tracking when they are aligned with the relevant shock channel, yet they rarely replace the standard macro block on their own.\citep{Peru2024,Georgia2022,US2022} For a small open economy, this implies that alternative data are most valuable as incremental real-time indicators layered on top of macro structure and fast market variables, not as a stand-alone substitute for them.
+
+Another important strand of the literature concerns revision risk and model uncertainty in real time. In practical nowcasting work, the object of interest is not only the final revised GDP release but also the sequence of estimates that policymakers would have seen as new information arrived. Anesti, Galv\~{a}o, and Miranda-Agrippino show that revision uncertainty can materially affect the interpretation of apparent forecast success, especially when economic conditions are unstable and the data-generating process itself is shifting.\citep{Anesti2020} This reinforces the need to evaluate Armenian nowcasts in a pseudo real-time design rather than with a single ex-post fit over a cleaned final dataset.
+
+The literature on transition and small open economies also suggests caution in transplanting large-country methods without adjustment. The Eurasian evidence reviewed by Tsukarev et al.\ shows that model performance is highly context dependent: when the macro sample is short and the economy is exposed to large external shocks, simpler bridge-style or regularized approaches often remain competitive with more complex machine-learning systems.\citep{ArmeniaBelarus2024} That lesson matters for Armenia because its recent growth path contains structural breaks related to war, migration, trade rerouting, and financial inflows. In such an environment, the methodological question is not whether a flexible nonlinear model can fit historical patterns, but whether it can do so without producing unstable or poorly interpretable real-time revisions.
+
+Taken together, these studies imply three standards for a credible Armenian nowcasting thesis. First, the literature review should distinguish mixed-frequency structure from purely statistical fit. Second, the contribution of alternative data should be measured at the margin rather than assumed from narrative appeal alone. Third, model rankings should be interpreted as operational preferences under limited data rather than as definitive proof that one specification dominates in all environments. These standards directly shape the evaluation strategy in Chapter 9.
 
 For a small open economy such as Armenia, nowcasting is particularly useful because major turning points can emerge first in trade, remittances, migration, commodity prices, exchange rates, and sector-specific monthly indicators. However, the same openness creates identification challenges. A strong tourism month, for example, may reflect seasonality rather than structural competitiveness; construction booms may raise GDP in the short run while creating medium-term financial vulnerabilities; and large migration flows may temporarily lift consumption, labor supply, and housing demand at the same time.
 
@@ -69,9 +88,13 @@ This thesis uses a dashboard-based empirical approach rather than a purely econo
 
 Accordingly, the thesis evaluates Armenia's economy through five linked channels: external conditions, real-sector activity, labor and demographics, prices and policy, and financial concentration. This structure is more appropriate for the Armenian case than a purely sectoral description because the same shock may propagate through several channels simultaneously.
 
+That dashboard structure is not separate from the nowcasting model; it is the economic map from which the nowcasting features are chosen. The external-sector chapter motivates exchange-rate, commodity-price, tourism, and remittance signals; the real-sector chapter motivates the use of the Economic Activity Index, industry, construction, and services indicators; the labor and macro-financial chapters motivate employment, wages, inflation, and credit variables. In other words, the dashboard chapters provide the economic interpretation of the same transmission channels that Chapter 9 later evaluates formally in pseudo real time.
+
+This integration is deliberate. Chapters 4--8 document which channels actually carried Armenian growth and vulnerability in the post-2022 period, while Chapter 9 asks whether those same channels improve real-time GDP tracking once they are encoded as leakage-safe features. The dashboard chapters therefore serve as empirical motivation, and the nowcasting chapter serves as formal validation. Structurally, the thesis is strongest when these two parts are read together rather than as separate projects.
+
 \chapter{Data and Methodology}
 \section{Data Sources}
-The deployed version of the dashboard is available at \url{https://haykozaq-gdp-nowcasting-dashboard-ogckd1.streamlit.app/}. The dashboard combines monthly and quarterly indicators from the main Armenian and international statistical sources. The core domestic sources are the Statistical Committee of the Republic of Armenia (Armstat), the Central Bank of Armenia (CBA), and the Ministry of Finance. International context variables are taken from publicly available commodity and macroeconomic datasets used in IMF, World Bank, and ADB assessments. The figures included in this thesis are based on processed datasets stored in the project workspace and transformed into publication-ready visuals.\cite{armstatbank,cbaMPR2025Q1,minfinBudget,imfCR24348,wbMEU2025,adbADO2024}
+The deployed version of the dashboard is available at \href{https://haykozaq-gdp-nowcasting-dashboard-ogckd1.streamlit.app/}{\textbf{Armenian\_Economy\_Dashboard}}\footnote{\url{https://haykozaq-gdp-nowcasting-dashboard-ogckd1.streamlit.app}}. The dashboard combines monthly and quarterly indicators from the main Armenian and international statistical sources. The core domestic sources are the Statistical Committee of the Republic of Armenia (Armstat), the Central Bank of Armenia (CBA), and the Ministry of Finance. International context variables are taken from publicly available commodity and macroeconomic datasets used in IMF, World Bank, and ADB assessments. The figures included in this thesis are based on processed datasets stored in the project workspace and transformed into publication-ready visuals.\cite{armstatbank,cbaMPR2025Q1,minfinBudget,imfCR24348,wbMEU2025,adbADO2024}
 
 The indicator set covers:
 \begin{itemize}
@@ -102,7 +125,7 @@ The nowcasting framework is indicator-based. It does not claim to be a full stru
 \end{enumerate}
 
 \section{Methodological Limitations}
-Several limitations should be noted at the outset. First, Armenian macroeconomic data can be revised, especially when annual totals replace monthly estimates. Second, some indicators are better interpreted as leading signals than as direct measures of output. Third, correlation does not prove causation: a sector may expand at the same time as GDP without being the dominant reason for overall growth. Fourth, migration and geopolitical shocks may create structural breaks that weaken the predictive power of historical patterns. These limitations do not invalidate the dashboard, but they require cautious interpretation.\cite{imfCR24348,wbPulse2025}
+Several limitations should be noted at the outset. First, Armenian macroeconomic data can be revised, especially when annual totals replace monthly estimates. Second, some indicators are better interpreted as leading signals than as direct measures of output. Third, correlation does not prove causation: a sector may expand at the same time as GDP without being the dominant reason for overall growth. Fourth, migration and geopolitical shocks may create structural breaks that weaken the predictive power of historical patterns. The dashboard chapters are therefore used as a disciplined diagnostic framework rather than as a source of causal identification by themselves; the formal forecast-comparison tests are reserved for the nowcasting chapter. These limitations do not invalidate the dashboard, but they require cautious interpretation.\cite{imfCR24348,wbPulse2025}
 
 \chapter{External Sector and Global Drivers}
 \section{Commodity Markets, Terms of Trade, and Export Sensitivity}
@@ -283,6 +306,12 @@ Agriculture is not the dominant source of Armenian GDP growth, but it remains im
 
 Construction is the most important sector in the thesis and also the main source of concern. Figures \ref{fig:construction_monthly}--\ref{fig:permits_yerevan} suggest that the sector was not merely expanding, but shaping the broader macroeconomic environment through investment, employment, housing demand, and bank credit. The analytical question is whether this represents healthy capital formation or concentration risk. A diversified funding structure would reduce vulnerability, but persistent price increases, elevated transaction activity, and strong permit issuance may also indicate overheating in urban real estate. Therefore, construction should be interpreted as both a growth engine and a fragility channel. If aggregate GDP is increasingly tied to this sector, then the apparent strength of Armenia's economy may overstate its balance.
 
+Three additional points follow from this evidence. First, the quality of construction matters as much as its quantity. A rise driven by productive infrastructure, export-supporting logistics, and broad-based regional investment would strengthen Armenia's long-run capacity. By contrast, a rise dominated by urban housing turnover, speculative land dynamics, and narrowly concentrated apartment development would generate much weaker productivity spillovers. The same growth rate can therefore imply very different macroeconomic meanings depending on the composition of the underlying projects.
+
+Second, the construction cycle affects more than output alone. When property prices, transaction volumes, and permits all remain elevated at the same time, they can reshape household expectations, redirect bank lending, and increase the economy's sensitivity to changes in financing conditions. This is especially important in a small open economy where external inflows, migration shocks, and exchange-rate movements may temporarily support real-estate demand. Under those conditions, construction can amplify a positive cycle quickly, but it can also transmit reversal risk quickly if financing, migration-driven demand, or public-sector support weaken.
+
+Third, the policy implication is not that construction growth is undesirable, but that it must be monitored together with affordability, credit concentration, and the balance between tradable and non-tradable sectors. If construction continues to dominate while industry and productivity-enhancing investment expand more slowly, headline GDP may remain strong even as the underlying growth model becomes less balanced. In that sense, the sector is the clearest case in the thesis where short-run strength and medium-term vulnerability coexist.
+
 \chapter{Labor Market, Demographics, and Social Dynamics}
 \section{Employment and the ICT Shift}
 \begin{figure}[H]
@@ -443,7 +472,32 @@ Banking-system resilience cannot be evaluated from profitability alone. Figure \
 These figures broaden the analysis beyond aggregate stability. Figure \ref{fig:external_trade} indicates whether domestic growth is accompanied by external rebalancing or by continued import dependence. Figure \ref{fig:utilities} offers a proxy for underlying productive activity. Figure \ref{fig:regional_industry} helps assess whether industrial gains are geographically concentrated. Finally, Figure \ref{fig:it_structure} is essential for evaluating whether Armenia's celebrated IT expansion is broad enough to count as structural transformation. Taken together, these charts suggest that Armenia has made progress toward a more modern economic base, but regional and sectoral concentration remain prominent.\cite{armstatbank,wbTrade2024,wbCPF2025}
 
 \chapter{Integrated Discussion: What Really Drove the Armenian Economy?}
-The evidence assembled in this thesis points to a clear but nuanced conclusion. Armenia's economy in 2024--2025 was resilient, yet the resilience was unevenly distributed across sectors and channels. Growth was supported by a favorable combination of external prices, service exports, labor-market tightening, and strong domestic demand. However, not all of these supports are equally durable.
+The evidence assembled in this thesis points to a clear but nuanced conclusion. Armenia's economy through 2026 Q1 was resilient, yet the resilience was unevenly distributed across sectors and channels. Growth was supported by a favorable combination of external prices, service exports, labor-market tightening, and strong domestic demand. However, not all of these supports are equally durable.
+
+\begingroup
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{2.35cm}>{\raggedright\arraybackslash}p{4.05cm}>{\raggedright\arraybackslash}p{4.05cm}>{\raggedright\arraybackslash}p{4.05cm}@{}}
+    \caption{Analytical synthesis of the dashboard evidence.}
+    \label{tab:dashboard_synthesis}\\
+    \toprule
+    Channel & Main high-frequency signal & GDP interpretation & Main risk implication \\
+    \midrule
+    \endfirsthead
+    \caption[]{Analytical synthesis of the dashboard evidence (continued).}\\
+    \toprule
+    Channel & Main high-frequency signal & GDP interpretation & Main risk implication \\
+    \midrule
+    \endhead
+    \bottomrule
+    \endfoot
+    External sector & Commodity prices, tourism, remittances, and exchange-rate conditions remained supportive through most of the sample. & External conditions helped stabilize demand and service exports, which supported short-run resilience. & These supports are partly exogenous and therefore vulnerable to normalization or geopolitical reversal. \\
+    Real sector & Economic activity, services, and especially construction stayed strong, while industry improved more selectively. & Headline growth was real, but much of it was concentrated in a narrow set of sectors rather than broadly diversified. & Construction-led momentum can overstate the durability of aggregate growth. \\
+    Labor market & Employment, wages, and formal labor indicators improved, while unemployment pressures eased. & The expansion translated into tighter labor conditions and stronger household income in the short run. & Skills shortages and sector concentration may limit how inclusive or productive the labor-market gains become. \\
+    Prices and policy & Inflation remained relatively contained and fiscal support was still visible in demand conditions. & Macroeconomic management prevented the boom from turning into generalized overheating. & Stable inflation does not remove the underlying concentration risk if growth remains dependent on a few channels. \\
+    Banking and balance-sheet exposure & Credit and real-estate-sensitive indicators remained heavily linked to the construction cycle. & Financial conditions amplified the same sectors that were already driving growth. & A reversal in construction or housing could transmit quickly into the banking system and domestic demand. \\
+\end{longtable}
+\endgroup
 
 Construction was the largest near-term engine of expansion. It stimulated output, employment, income, and related credit demand. At the same time, it increased Armenia's exposure to property-cycle risk, budget dependence, and banking concentration. This means that the same sector that improved the nowcast also raised the medium-term risk profile of the economy.
 
@@ -472,75 +526,62 @@ In that sense, the Armenian economy during the period covered by this thesis was
 \begin{thebibliography}{99}
 \bibitem{adbADO2024}
 Asian Development Bank.
-\textit{Asian Development Outlook, April 2024}.
-Available at: \url{https://www.adb.org/sites/default/files/publication/957856/asian-development-outlook-april-2024.pdf}
+\href{https://www.adb.org/sites/default/files/publication/957856/asian-development-outlook-april-2024.pdf}{\textit{Asian Development Outlook, April 2024}}.
 
 \bibitem{armstatbank}
 Statistical Committee of the Republic of Armenia.
-\textit{ArmStatBank}.
-Available at: \url{https://statbank.armstat.am/pxweb/en/ArmStatBank/}
+\href{https://statbank.armstat.am/pxweb/en/ArmStatBank/}{\textit{ArmStatBank}}.
 
 \bibitem{cbaMPR2025Q1}
 Central Bank of Armenia.
-\textit{Monetary Policy Outlook 2025 Q1}.
+\href{https://www.cba.am/file_manager/Inflation-reports./MPR_2025Q1_Eng.pdf}{\textit{Monetary Policy Outlook 2025 Q1}}.
 March 2025.
-Available at: \url{https://www.cba.am/Storage/AM/downloads/parberakan/DVQ/Monetary_Policy_Outlook_2025Q1_eng.pdf}
 
 \bibitem{cbaImpl2025}
 Central Bank of Armenia.
-\textit{Monetary Policy Program Implementation Report (Q2 2024--Q1 2025)}.
+\href{https://www.cba.am/en/reports/8463}{\textit{Monetary Policy Program Implementation Report (Q2 2024--Q1 2025)}}.
 May 2025.
-Available at: \url{https://www.cba.am/en/reports/8463}
 
 \bibitem{imfCR24348}
 International Monetary Fund.
-\textit{Republic of Armenia: Fourth Review Under the Stand-By Arrangement and Request for Modifications of Performance Criterion and Monetary Policy Consultation Clause}.
+\href{https://www.imf.org/en/Publications/CR/Issues/2024/12/17/Republic-of-Armenia-Fourth-Review-Under-the-Stand-By-Arrangement-and-Request-for-559673}{\textit{Republic of Armenia: Fourth Review Under the Stand-By Arrangement and Request for Modifications of Performance Criterion and Monetary Policy Consultation Clause}}.
 IMF Country Report No. 24/348, December 2024.
-Available at: \url{https://www.imf.org/en/Publications/CR/Issues/2024/12/17/Republic-of-Armenia-Fourth-Review-Under-the-Stand-By-Arrangement-and-Request-for-559673}
 
 \bibitem{minfinBudget}
 Ministry of Finance of the Republic of Armenia.
-\textit{State Budget}.
-Available at: \url{https://www.minfin.am/en/page/budget/}
+\href{https://www.minfin.am/en/page/budget/}{\textit{State Budget}}.
 
 \bibitem{wbCPF2025}
 World Bank.
-\textit{World Bank Group to Support Job Creation and Resilience in Armenia}.
+\href{https://www.worldbank.org/en/news/press-release/2025/01/21/world-bank-group-to-support-job-creation-and-resilience-in-armenia}{\textit{World Bank Group to Support Job Creation and Resilience in Armenia}}.
 January 21, 2025.
-Available at: \url{https://www.worldbank.org/en/news/press-release/2025/01/21/world-bank-group-to-support-job-creation-and-resilience-in-armenia}
 
 \bibitem{wbMEU2024}
 World Bank.
-\textit{Armenia Monthly Economic Update -- January 2024}.
-Available at: \url{https://thedocs.worldbank.org/en/doc/6b97e748ad629581293fc77a1a9030d5-0080012024/original/ARM-MEU-JAN-2024-Eng.pdf}
+\href{https://thedocs.worldbank.org/en/doc/6b97e748ad629581293fc77a1a9030d5-0080012024/original/ARM-MEU-JAN-2024-Eng.pdf}{\textit{Armenia Monthly Economic Update -- January 2024}}.
 
 \bibitem{wbMEU2025}
 World Bank.
-\textit{Armenia Monthly Economic Update -- February 2025}.
-Available at: \url{https://thedocs.worldbank.org/en/doc/31d4fb42e3f938e12830d2f6339c17fa-0080062025/original/ARM-MEU-FEB-2025-en.pdf}
+\href{https://thedocs.worldbank.org/en/doc/31d4fb42e3f938e12830d2f6339c17fa-0080062025/original/ARM-MEU-FEB-2025-en.pdf}{\textit{Armenia Monthly Economic Update -- February 2025}}.
 
 \bibitem{wbPER2023}
 World Bank.
-\textit{A New Report by the World Bank Offers a Roadmap for Improving Public Spending Efficiency in Armenia}.
+\href{https://www.worldbank.org/en/news/press-release/2023/11/09/a-new-report-by-the-world-bank-offers-a-roadmap-for-improving-public-spending-efficiency-in-armenia}{\textit{A New Report by the World Bank Offers a Roadmap for Improving Public Spending Efficiency in Armenia}}.
 November 9, 2023.
-Available at: \url{https://www.worldbank.org/en/news/press-release/2023/11/09/a-new-report-by-the-world-bank-offers-a-roadmap-for-improving-public-spending-efficiency-in-armenia}
 
 \bibitem{wbPulse2025}
 World Bank.
-\textit{Armenia's Economic Pulse: Fairer Markets for Inclusive Growth}.
-Available at: \url{https://www.worldbank.org/en/country/armenia/publication/armenia-economic-pulse-fairer-markets-for-inclusive-growth}
+\href{https://www.worldbank.org/en/country/armenia/publication/armenia-economic-pulse-fairer-markets-for-inclusive-growth}{\textit{Armenia's Economic Pulse: Fairer Markets for Inclusive Growth}}.
 
 \bibitem{wbTourism2025}
 World Bank.
-\textit{Armenia to Create Jobs, Attract Private Investment through Stronger Local Tourism Infrastructure}.
+\href{https://www.worldbank.org/en/news/press-release/2025/04/17/armenia-to-create-jobs-attract-private-investment-through-stronger-local-tourism-infrastructure}{\textit{Armenia to Create Jobs, Attract Private Investment through Stronger Local Tourism Infrastructure}}.
 April 17, 2025.
-Available at: \url{https://www.worldbank.org/en/news/press-release/2025/04/17/armenia-to-create-jobs-attract-private-investment-through-stronger-local-tourism-infrastructure}
 
 \bibitem{wbTrade2024}
 World Bank.
-\textit{Armenia Trade Competitiveness Diagnostic}.
+\href{https://www.worldbank.org/en/news/factsheet/2024/11/07/armenia-trade-competitiveness-diagnostic}{\textit{Armenia Trade Competitiveness Diagnostic}}.
 November 7, 2024.
-Available at: \url{https://www.worldbank.org/en/news/factsheet/2024/11/07/armenia-trade-competitiveness-diagnostic}
 \end{thebibliography}
 
 \end{document}

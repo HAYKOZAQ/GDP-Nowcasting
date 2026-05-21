@@ -108,7 +108,7 @@ structural volatility, including the global financial crisis and the
 COVID-19 pandemic? Third, can forecast combination strategies and model
 interpretability tools---most notably Shapley value
 decompositions---extend the practical utility of nowcasts beyond what
-any single model delivers?\citep{Netherlands2024}
+any single model delivers?\citep{NetherlandsDNB2022}
 
 The thesis makes contributions at three levels.
 \textbf{Methodologically}, it provides a systematic head-to-head
@@ -227,7 +227,7 @@ Random Forest delivers the most accurate nowcasts for the current
 quarter---an RMSFE of 0.91 in month~1 versus 0.98 for the DFM relative
 to the prevailing mean benchmark---while the DFM recovers its advantage
 for backcasting once hard data on the target quarter begin to arrive
-(RMSFE 0.79 versus 0.88).\citep{Netherlands2024} Studies for Armenia
+(RMSFE 0.79 versus 0.88).\citep{NetherlandsDNB2022} Studies for Armenia
 and Belarus demonstrate that LASSO (Armenia: RMSE~3.38) and SVM
 (Belarus: RMSE~1.44) minimise forecast errors for real GDP, because
 growth in both countries is governed by a narrow set of dominant
@@ -296,42 +296,12 @@ pronounced both during the COVID-19 period and during the global
 financial crisis of 2008--2009---precisely the episodes where the
 non-linear, regime-switching behaviour of the economy fell outside the
 range of experience that linear factor models had been trained to
-capture.\citep{Netherlands2024} Financial market participants constitute
+capture.\citep{NetherlandsDNB2022} Financial market participants constitute
 a second major constituency: the BSTS model of Kohns and Bhattacharjee
 shows that incorporating Google Trends data produces materially sharper
 estimates of US GDP in the weeks before any hard data are available,
 allowing market participants to update yield and equity price
 expectations with better information.\citep{US2022}
-
-\section{Limitations and Critical Perspectives}
-
-The practical value of nowcasting models must be assessed alongside a
-clear-eyed awareness of their structural limitations. A fundamental
-constraint is data quality: measurement error, subsequent revisions,
-definitional reclassifications, and unstable seasonal adjustment
-procedures can corrupt the signal extracted from raw indicators, with
-these problems being more acute in emerging economies where data
-infrastructure is still developing. The estimated relationships between
-high-frequency predictors and quarterly GDP are reduced-form in nature
-and therefore susceptible to the Lucas critique: a change in policy
-regime or in agents' behaviour can alter the co-movement structure that
-the model was trained to exploit.\citep{ArmeniaBelarus2024}
-
-Alternative data sources introduce specific risks of their own.
-Internet search volumes may be distorted by algorithmic changes to
-search platforms, shifts in the demographic composition of internet
-users, or the emergence of competing information sources---any of which
-can create structural breaks in the relationship between search indices
-and the underlying economic phenomena they proxy. Highly flexible
-machine learning architectures furthermore risk becoming opaque
-``black boxes'' that generate accurate in-sample estimates but lack
-interpretability, making them difficult to communicate credibly to
-policymakers and potentially prone to overfitting when applied to
-economic regimes not represented in the training data. These concerns
-strengthen the case for rigorous out-of-sample evaluation, transparent
-model documentation, ensemble approaches that diversify across model
-families, and the sustained role of informed economic judgement
-alongside statistical output.\citep{Netherlands2024}
 
 %=========================================================
 \chapter{Analytical and Data Framework}
@@ -375,7 +345,7 @@ variable selection or multicollinearity handling respectively.
 bootstrapped samples and random predictor subsets, averaging their
 predictions \(\hat{f}_{RF}(x) = B^{-1}\sum_{b=1}^{B}\hat{f}_b(x)\)
 to capture non-linear regime dependencies and interaction
-effects.\citep{Netherlands2024} \textit{Recurrent Neural Networks}
+effects.\citep{NetherlandsDNB2022} \textit{Recurrent Neural Networks}
 maintain a hidden state \(h_t = \sigma(W_{hh}h_{t-1} + W_{xh}x_t)\)
 that accumulates temporal information across time steps, making them
 well-suited to persistent and non-linear price dynamics. When individual
@@ -500,7 +470,7 @@ across model families is a reliable hedge against individual
 specification failures.
 
 Kant, Pick and de Winter evaluate eleven methods for the Netherlands
-over 1992Q1--2018Q4.\citep{Netherlands2024} At month-1 of the nowcast
+over 1992Q1--2018Q4.\citep{NetherlandsDNB2022} At month-1 of the nowcast
 horizon, Random Forest produces an RMSFE of 0.91 versus 0.98 for DFM.
 The non-linearities captured by Random Forest are most valuable when
 data are sparse: soft indicators (confidence surveys, PMIs) dominate
@@ -525,48 +495,43 @@ hard statistics will only document weeks later.\citep{US2022}
 \begin{thebibliography}{99}
 
 \bibitem{Giannone2008}
-Giannone, D., Reichlin, L., \& Small, D. (2008).
-Nowcasting: The real-time informational content of macroeconomic data.
-\textit{Journal of Monetary Economics}, 55(4), 665--676.
-
-\bibitem{Netherlands2024}
-Kant, D., Pick, A., \& de Winter, J. (2024).
-\textit{Nowcasting GDP using machine learning methods}.
-ASTA Advances in Statistical Analysis.
+Giannone, D., Reichlin, L., \& Small, D. (2006).
+\href{https://www.ecb.europa.eu/pub/pdf/scpwps/ecbwp633.pdf}{\textit{Nowcasting: The real-time informational content of macroeconomic data}}.
+European Central Bank Working Paper No.\ 633.
 
 \bibitem{NetherlandsDNB2022}
 Kant, D., Pick, A., \& de Winter, J. (2022).
-\textit{Nowcasting GDP using machine learning methods}.
+\href{https://www.dnb.nl/media/kq4pe4cr/working_paper_no_754.pdf}{\textit{Nowcasting GDP using machine learning methods}}.
 De Nederlandsche Bank Working Paper No.\ 754.
 
 \bibitem{ArmeniaBelarus2024}
 Tsukarev, T., Poghosyan, K., Lemba, K., \& Grishin, D. (2024).
-\textit{GDP Nowcasting: From Traditional Econometric Models to Machine Learning Algorithms}.
+\href{https://efsd.org/upload/iblock/0f4/hwg0io77bdcni8o7z0qmqjlpu7zagtpo/GDP-NOWCASTING-FROM-TRADITIONAL-ECONOMETRIC-MODELS-TO-MACHINE-LEARNING-ALGORITHMS.pdf}{\textit{GDP Nowcasting: From Traditional Econometric Models to Machine Learning Algorithms}}.
 Eurasian Fund for Stabilization and Development, Working Paper WP/25/1.
 
 \bibitem{Georgia2022}
 Mgebrishvili, M. (2022).
-\textit{Nowcasting with high frequency data, Google trends and machine learning}.
+\href{https://drive.google.com/file/d/118GZO60e9TBU52rk-vnPM0KlXjtRH4S2/view?usp=sharing}{\textit{Nowcasting with high frequency data, Google trends and machine learning}}.
 Ministry of Finance of Georgia, Working Paper WP 01/2022.
 
 \bibitem{Peru2024}
 Tenorio, J., \& Perez, W. (2024).
-\textit{Monthly GDP nowcasting with Machine Learning and Unstructured Data}.
+\href{https://drive.google.com/file/d/1tIbCTI5vBiTK9OfBZ8C-3nT4Bnhuco1d/view?usp=sharing}{\textit{Monthly GDP nowcasting with Machine Learning and Unstructured Data}}.
 arXiv:2402.04165v1.
 
 \bibitem{US2022}
 Kohns, D., \& Bhattacharjee, A. (2022).
-\textit{Nowcasting Growth using Google Trends Data: A Bayesian Structural Time Series Model}.
+\href{https://arxiv.org/abs/2011.00938}{\textit{Nowcasting Growth using Google Trends Data: A Bayesian Structural Time Series Model}}.
 arXiv:2011.00938v2.
 
 \bibitem{Bok2017}
 Bok, B., Caratelli, D., Giannone, D., Sbordone, A., \& Tambalotti, A. (2017).
-\textit{Macroeconomic Nowcasting and Forecasting with Big Data}.
+\href{https://www.newyorkfed.org/medialibrary/media/research/staff_reports/sr830.pdf}{\textit{Macroeconomic Nowcasting and Forecasting with Big Data}}.
 Federal Reserve Bank of New York, Staff Report No.\ 830.
 
 \bibitem{Anesti2020}
 Anesti, N., Galv\~{a}o, A. B., \& Miranda-Agrippino, S. (2020).
-\textit{Uncertain Kingdom: Nowcasting GDP and its Revisions}.
+\href{https://www.bankofengland.co.uk/-/media/boe/files/working-paper/2018/uncertain-kingdom-nowcasting-gdp-and-its-revisions.pdf}{\textit{Uncertain Kingdom: Nowcasting GDP and its Revisions}}.
 Bank of England, Staff Working Paper No.\ 764.
 
 \end{thebibliography}

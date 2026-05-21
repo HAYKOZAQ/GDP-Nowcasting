@@ -1,0 +1,808 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{geometry}
+\usepackage{setspace}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+
+\geometry{margin=1in}
+\onehalfspacing
+\graphicspath{{../figures/}{../results/figures/}{../results/forecasts/}}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\renewcommand{\arraystretch}{1.12}
+
+\begin{document}
+
+\section{Nowcasting Framework, Model Construction, and Empirical Results}
+
+\section{Overview of the Nowcasting System}
+
+This chapter presents the final pseudo real-time nowcasting system for Armenia's real GDP growth. The purpose of the framework is to estimate quarterly year-on-year GDP growth before the official release by combining quarterly macroeconomic information, monthly official indicators, and faster market- and search-based signals. The empirical design is organized around three information stages:
+\begin{itemize}
+    \item \textbf{Early}: only month-1 fast indicators and lagged macroeconomic information are available;
+    \item \textbf{Mid}: first monthly official releases for the quarter become available;
+    \item \textbf{Late}: the within-quarter information set is close to complete before the GDP publication.
+\end{itemize}
+
+The stage structure matters because the information set changes materially within the quarter. In normal periods, relatively standard bridge and regularized regression models are often sufficient. In crisis periods, especially in the \textit{Early} stage, the same-quarter signal is sparse and noisy. For that reason, the final system does not rely on a single specification. Instead, it combines structural benchmarks, machine-learning models, and targeted regime adjustments.
+
+This point is especially important given the focus of the thesis on alternative data sources. In the Armenian application, alternative indicators are not an ornamental addition to an already complete official dataset. They are the main same-quarter signals available at the beginning of the quarter, and they remain valuable later as rapid indicators of external stress, regime change, and turning points that may not yet be visible in the official releases.
+
+The feature design also follows directly from the dashboard chapters that precede this one. The external-sector analysis identified exchange rates, commodity prices, remittances, and tourism-related stress as the fastest channels through which Armenia absorbs foreign shocks. The real-sector discussion highlighted the Economic Activity Index, industry, construction, and services as the main high-frequency domestic activity signals. The labor, price, and financial chapters showed why employment, wages, inflation, and credit conditions matter for distinguishing broad-based growth from concentrated growth. The nowcasting chapter therefore does not begin a new empirical project; it formalizes the same channels in a pseudo real-time forecasting environment.
+
+\section{Data Construction and Feature Engineering}
+
+The target variable is Armenia's quarterly real GDP growth in year-on-year terms, denoted by
+\begin{equation}
+    y_t = 100 \times \frac{GDP_t - GDP_{t-4}}{GDP_{t-4}}.
+\end{equation}
+
+The explanatory information set contains four main data blocks:
+\begin{enumerate}
+    \item \textbf{Quarterly macroeconomic variables}: Russia's GDP growth, CPI, REER, employment, unemployment, income-related variables, exchange-rate indicators, and curated administrative alternative indicators from payment cards and e-money activity.
+    \item \textbf{Monthly official variables}: CPI, Economic Activity Index, industrial growth, construction growth, services growth, monetary aggregates, loans, deposits, and remittance indicators.
+    \item \textbf{High-frequency fast variables}: AMD/USD, AMD/RUB, Brent oil price, copper price, and curated Google Trends blocks.
+    \item \textbf{Shock and external-leading features}: composite search-based shock measures, Russia-linked interaction terms, and financial-stress-style exchange-rate indicators.
+\end{enumerate}
+
+\subsection{Detailed Description of the Data Used}
+
+The empirical dataset used in this study combines quarterly macroeconomic series, monthly official indicators, and fast-moving external and search-based proxies. Building this panel was itself a substantial part of the research, since Armenia does not have a ready-made public nowcasting database.
+
+\paragraph{Quarterly block.}
+The quarterly block contains the target series together with slower-moving macroeconomic controls. It includes Armenia's real GDP growth, Russia's real GDP growth, CPI, REER, employment growth, unemployment, labor-income variables, transfer-income variables, and expenditure-side aggregates such as consumption, investment, exports, and imports. In the refreshed specification, this block also absorbs curated quarterly administrative alternatives from the Central Bank of Armenia: payment-card circulation, domestic card transaction volumes, non-cash transaction shares, active e-money accounts, and e-money transaction flows. This expanded block anchors the system in medium-run macroeconomic structure while also capturing financial-digital behavior that is not visible in the standard national accounts tables alone.
+
+\paragraph{Monthly official block.}
+The monthly official block contains the main real-sector and financial indicators used in bridge-style nowcasting. The final panel includes CPI, the Economic Activity Index, industrial growth, construction growth, services growth, interest rates, cash in circulation, monetary aggregates, deposits, loans, and remittance indicators. It also incorporates monthly extensions collected from the Central Bank of Armenia and ArmStat. These variables carry much of the forecasting power in the \textit{Mid} and \textit{Late} stages.
+
+\paragraph{Fast block.}
+The fast block was introduced to capture information before official monthly releases appear. It includes AMD/USD, AMD/RUB, Brent oil, copper prices, and several groups of Google Trends indicators. These variables are particularly important in the \textit{Early} stage, when no same-quarter official monthly indicators are yet available.
+
+\paragraph{Alternative-data and shock block.}
+Because the thesis is specifically about GDP nowcasting with alternative data sources, this block is central to the empirical strategy. Rather than using individual search terms directly, the framework aggregates them into thematic composites: housing stress, relocation intensity, banking stress, and jobs/IT relocation. These are then combined into an overall shock composite. The alternative-data architecture is therefore two-layered: quarterly administrative fintech proxies capture the scale and composition of non-cash activity, while the fast Google-based block captures behavioral stress, relocation pressure, and demand shifts. This reduces dimensionality and makes the resulting signals easier to interpret economically. In substantive terms, the block provides rapid evidence on stress, mobility, financial anxiety, and payment behavior before those developments are fully summarized in the official monthly statistics.
+
+\paragraph{External-leading block.}
+Because Armenian GDP is highly exposed to external disturbances, especially those transmitted through Russia, the framework also includes interaction variables such as oil--RUB, copper--RUB, RUB stress, and a simple financial-stress proxy derived from AMD/USD and AMD/RUB volatility. These variables help the model react earlier to turning points originating outside Armenia.
+
+Quarterly engineered features were constructed to reflect Armenia's external dependence and crisis sensitivity. In particular, the final framework included:
+\begin{align}
+    \text{MigrationInflux}_t &= \frac{\max(0, 100 - FX^{AMD/USD}_{yoy,t}) \cdot \max(0, PI^{yoy}_t)}{100}, \\
+    \text{RU\_ARM\_Gap}_t &= y_t - y^{RU}_t, \\
+    \text{RU\_Oil\_Link}_t &= y^{RU}_t \cdot Oil_t, \\
+    \text{RU\_AMD\_RUB\_Link}_t &= y^{RU}_t \cdot FX^{AMD/RUB}_t.
+\end{align}
+
+At the monthly level, the fast block was aggregated into quarterly-stage features using means, last-observation summaries, and a simple Almon-style weighted average:
+\begin{equation}
+    x^{ALMON}_{t} = 0.2119 x_{t,1} + 0.5761 x_{t,2} + 0.2119 x_{t,3},
+\end{equation}
+where the weights were adapted to the number of months available at each stage.
+
+Google Trends variables were not used individually in the final preferred system. Instead, they were grouped into interpretable composite blocks:
+\begin{itemize}
+    \item \texttt{FAST\_SHOCK\_HOUSING},
+    \item \texttt{FAST\_SHOCK\_RELOCATION},
+    \item \texttt{FAST\_SHOCK\_BANKING},
+    \item \texttt{FAST\_SHOCK\_JOBS\_IT},
+    \item \texttt{FAST\_SHOCK\_COMPOSITE}.
+\end{itemize}
+
+In addition, external-leading features were added in order to capture Armenia's sensitivity to Russian and global shocks:
+\begin{align}
+    \text{RUS\_LINK\_OIL\_RUB}_m &= FX^{AMD/RUB}_m \cdot Oil_m, \\
+    \text{RUS\_LINK\_COPPER\_RUB}_m &= FX^{AMD/RUB}_m \cdot Copper_m, \\
+    \text{RUS\_LINK\_RUB\_STRESS}_m &= \left| \Delta FX^{AMD/RUB}_m \right|, \\
+    \text{FIN\_STRESS\_PROXY}_m &= \frac{\left| \Delta FX^{AMD/USD}_m \right| + \left| \Delta FX^{AMD/RUB}_m \right|}{2}.
+\end{align}
+
+This data structure reflects the basic economic logic of the Armenian nowcasting problem. GDP is quarterly and released with delay, but the relevant signals arrive at different frequencies and through different channels. The framework therefore combines slow-moving macroeconomic structure, monthly official activity indicators, and fast market and search proxies in a single leakage-safe design.
+
+The importance of alternative data also changes across stages. In \textit{Early}, the nowcast relies heavily on lagged quarterly structure plus month-1 alternative indicators such as exchange rates, commodity prices, Google Trends composites, and external stress features because same-quarter official monthly releases are not yet available. In \textit{Mid}, those alternative indicators remain in the information set, but they are joined by the first official monthly releases, which sharply improve identification of current-quarter activity. In \textit{Late}, the same official monthly series are observed with much fuller within-quarter coverage, yet the alternative-data block still matters because it helps monitor external transmission channels and detect abrupt changes that may not be fully summarized by the official averages alone.
+
+\section{Pseudo Real-Time Evaluation Design}
+
+All models were evaluated in an expanding-window pseudo real-time backtest. Let $t$ denote the target quarter. For each quarter and each information stage, the model was estimated using only the information available at that point:
+\begin{itemize}
+    \item in the \textbf{Early} stage, the information set contains lagged quarterly macro variables together with month-1 alternative indicators from exchange rates, commodity prices, Google Trends composites, and shock features, while no same-quarter official monthly variables are used;
+    \item in the \textbf{Mid} stage, month-2 alternative indicators remain available and are joined by the first official monthly release for the target quarter;
+    \item in the \textbf{Late} stage, the within-quarter information set is close to complete, so the nowcast uses fuller within-quarter observations for the official monthly block while retaining the alternative indicators for external and regime monitoring.
+\end{itemize}
+
+In practice, this means that preprocessing, feature selection, scaling, imputation, PCA reduction, and model fitting were all re-estimated inside each training window. This limits information leakage and makes the reported forecast errors methodologically credible.
+
+An important limitation should be stated explicitly. The design is pseudo real-time rather than full real-vintage real-time. The stage masks follow the historical release calendar, but the underlying workbook primarily uses the latest revised data vintages, not a complete archive of every historical vintage seen by policymakers at each forecast date. The reported results therefore measure robust comparative performance under release-timing constraints, while true vintage-revision uncertainty remains only partially captured.
+
+For each model and stage, the following evaluation metrics were computed:
+\begin{align}
+    MAE &= \frac{1}{T}\sum_{t=1}^T |\hat{y}_t - y_t|, \\
+    RMSE &= \sqrt{\frac{1}{T}\sum_{t=1}^T (\hat{y}_t - y_t)^2}, \\
+    MAPE &= \frac{100}{T}\sum_{t=1}^T \left| \frac{\hat{y}_t - y_t}{y_t} \right|.
+\end{align}
+
+Empirical prediction intervals were also constructed from the rolling residual distribution. For each stage-model pair, 50\% and 90\% bands were estimated from historical absolute-residual quantiles.
+
+\section{Benchmark Models}
+
+The benchmark section needs one distinction that earlier draft versions did not make clearly enough. The project evaluated a broader exploratory model set during development, but the final refreshed benchmark set used for the thesis tables is narrower and more disciplined:
+\begin{itemize}
+    \item main structural benchmarks:\\ \texttt{AR}, \texttt{Bridge}, \texttt{MIDAS}, and \texttt{DFM};
+    \item main machine-learning benchmarks:\\ \texttt{ElasticNet}, \texttt{RandomForest}, and \texttt{GradientBoosting};
+    \item main combination benchmarks:\\ \texttt{StackingNowcast}, \texttt{AdaptiveEnsemble}, \texttt{SimpleEnsemble}, and \texttt{ShockSwitch};
+    \item targeted repair models:\\ \texttt{DFMShockAdjusted} and \texttt{EarlyShockAdjusted}.
+\end{itemize}
+
+By contrast, a few models are retained mainly for legacy comparison or diagnostics, especially \texttt{FactorAugmentedPCA}, \texttt{Huber}, \texttt{EarlyShockBridge}, and \texttt{Shadow}, rather than as final preferred benchmarks.
+
+\subsection{Autoregressive Baseline (AR)}
+
+The autoregressive benchmark uses lagged GDP growth and current-quarter regime dummies:
+\begin{equation}
+    y_t = \alpha + \beta_1 y_{t-1} + \beta_2 y_{t-2} + \beta_4 y_{t-4} + \gamma' D_t + \varepsilon_t,
+\end{equation}
+where $D_t$ includes crisis and seasonal indicators. This model serves as the minimum benchmark and is especially useful in extreme quarters because it is stable and difficult to overfit.
+
+\subsection{Bridge Regression}
+
+The bridge model links quarterly GDP growth to quarterly macro variables and selected monthly activity indicators. The operational specification is estimated as a ridge regression:
+\begin{equation}
+    \hat{\beta}^{ridge} = \arg\min_{\beta} \left\{ \sum_{t=1}^{T}(y_t - X_t \beta)^2 + \lambda \|\beta\|_2^2 \right\}.
+\end{equation}
+This model is useful because it balances interpretability and robustness while drawing directly on activity indicators such as the Economic Activity Index, industrial growth, construction, and services.
+
+\subsection{Elastic Net}
+
+Elastic Net is used as the main regularized machine-learning benchmark:
+\begin{equation}
+    \hat{\beta}^{EN} = \arg\min_{\beta} \left\{ \sum_{t=1}^{T}(y_t - X_t \beta)^2 + \lambda \left[ \alpha \|\beta\|_1 + \frac{1-\alpha}{2}\|\beta\|_2^2 \right] \right\}.
+\end{equation}
+It is especially useful in the \textit{Early} stage, where it can screen a high-dimensional feature set and retain the most informative fast indicators without producing an unstable saturated regression.
+
+\subsection{Legacy Factor-Augmented PCA Regression}
+
+The factor-augmented PCA benchmark is an approximate factor model. Monthly variables are first standardized and reduced by principal components:
+\begin{equation}
+    X^{(m)}_t \approx F_t \Lambda',
+\end{equation}
+where $F_t$ denotes the retained principal components. GDP growth is then forecast using ridge regression on the quarterly block and the latent factors:
+\begin{equation}
+    y_t = \alpha + Z_t' \delta + F_t' \theta + \varepsilon_t.
+\end{equation}
+This serves as a useful comparison benchmark, but it is not a true ragged-edge state-space DFM. In the final refreshed benchmark set used for thesis conclusions, this legacy PCA-factor route is replaced operationally by \texttt{MIDAS} because \texttt{MIDAS} preserves timing information more reliably in the Armenian sample.
+
+\subsection{Dynamic Factor Model (DFM)}
+
+The true structural benchmark in the thesis is a mixed-frequency dynamic factor model estimated with \texttt{DynamicFactorMQ}. The measurement equations can be written as
+\begin{align}
+    x_{i,m} &= \lambda_i f_m + u_{i,m}, \\
+    y_t &= \lambda_y f_t^{(q)} + u_{y,t},
+\end{align}
+where $x_{i,m}$ are monthly observed indicators, $f_m$ is the latent common factor, and $f_t^{(q)}$ is the quarterly aggregation of the latent monthly factor. The factor evolves according to
+\begin{equation}
+    f_m = \phi f_{m-1} + \eta_m.
+\end{equation}
+
+The baseline DFM uses one latent factor, first-order factor dynamics, and optionally AR(1) idiosyncratic components. In the context of this thesis, it is the most defensible theory-grounded mixed-frequency benchmark because it handles ragged-edge monthly information directly.
+
+\subsection{DFMShockAdjusted}
+
+The raw DFM still tends to overpredict in sharp collapse quarters because the latent factor smooths abrupt regime shifts. Therefore, a crisis-corrected version was introduced:
+\begin{equation}
+    \hat{y}^{adj}_t = (1-\omega_t)\hat{y}^{DFM}_t + \omega_t s_t,
+\end{equation}
+where $s_t$ is the current-quarter official activity signal derived from the Economic Activity Index, industrial growth, construction, and services, and $\omega_t$ increases when the gap between the DFM nowcast and the contemporaneous activity signal becomes large. The goal is to preserve the structural role of the DFM while correcting its most important crisis-quarter bias.
+
+\subsection{Random Forest}
+
+The Random Forest benchmark approximates the conditional expectation function nonlinearly:
+\begin{equation}
+    \hat{y}_t = \frac{1}{B}\sum_{b=1}^{B} T_b(X_t),
+\end{equation}
+where $T_b(\cdot)$ denotes the $b$-th regression tree. This model can capture nonlinear interactions among fast indicators and crisis dummies, but in a small sample it can be less stable than regularized linear alternatives.
+
+\subsection{Gradient Boosting}
+
+The boosting benchmark iteratively updates the forecast function by fitting trees to the residuals:
+\begin{equation}
+    f_M(x) = \sum_{m=1}^{M} \nu h_m(x),
+\end{equation}
+where $h_m(\cdot)$ are shallow trees and $\nu$ is the learning rate. This model is intended to capture nonlinear relationships and interactions, especially in the \textit{Mid} stage.
+
+\subsection{Huber Regression}
+
+Huber regression minimizes a robust loss:
+\begin{equation}
+    L_\delta(r) =
+    \begin{cases}
+        \frac{1}{2}r^2, & |r| \leq \delta, \\
+        \delta \left(|r| - \frac{1}{2}\delta \right), & |r| > \delta.
+    \end{cases}
+\end{equation}
+In principle, this should help when forecast errors are heavy-tailed. In practice, it remained unstable in the Armenian GDP application and therefore served mainly as a diagnostic benchmark.
+
+\subsection{EarlyShockBridge}
+
+This benchmark was designed for the \textit{Early} stage only. It uses a restricted information set composed of lagged GDP, fast shock composites, exchange rates, oil, copper, and crisis dummies:
+\begin{equation}
+    y_t = \alpha + \beta' z_t + \varepsilon_t,
+\end{equation}
+where $z_t$ contains only crisis-sensitive fast indicators. The model is estimated using a Huber-type regression in order to reduce sensitivity to isolated large errors.
+
+\subsection{Shadow Model}
+
+The Shadow model is a stability benchmark using only a very small set of robust predictors. It can be written as
+\begin{equation}
+    y_t = \alpha + \beta' x_t^{shadow} + \varepsilon_t,
+\end{equation}
+where $x_t^{shadow}$ includes only a handful of stable variables such as lagged GDP, Russian GDP, CPI, exchange-rate information, and the financial stress proxy. The Shadow model is not designed to win on average accuracy; its value lies in indicating when richer specifications may be drifting too far from historically plausible values.
+
+\subsection{Combination Models}
+
+Four combination-style models were used across the project, but only one of them becomes the final operational reference model:
+\begin{enumerate}
+    \item \textbf{StackingNowcast}: a meta-learner that combines base-model predictions directly,
+    \begin{equation}
+        \hat{y}_t^{stack} = g\!\left(\hat{y}_t^{AR}, \hat{y}_t^{Bridge}, \hat{y}_t^{ElasticNet}, \hat{y}_t^{RF}, \hat{y}_t^{DFM}, \ldots \right),
+    \end{equation}
+    where $g(\cdot)$ is estimated on the expanding training window. This is the final operational model reported in the refreshed thesis results.
+    \item \textbf{SimpleEnsemble}: arithmetic average of a subset of model forecasts. It remains a useful comparator but not the preferred final specification.
+    \item \textbf{AdaptiveEnsemble}: weighted average of recent model predictions, where the weights are inversely proportional to recent regime-specific absolute errors:
+    \begin{equation}
+        w_{j,t} \propto \frac{1}{MAE_{j,t-1:t-k} + \epsilon}, \qquad
+        \hat{y}_t = \sum_j w_{j,t}\hat{y}_{j,t}.
+    \end{equation}
+    \item \textbf{ShockSwitch}: a regime-dependent combination of Bridge, Elastic Net, and Random Forest forecasts:
+    \begin{equation}
+        \hat{y}_t = (1-p_t)\hat{y}^{normal}_t + p_t \hat{y}^{shock}_t,
+    \end{equation}
+    where $p_t \in [0,1]$ is the estimated probability of being in a shock regime.
+\end{enumerate}
+
+The main difference across these combination models is conceptual. \texttt{SimpleEnsemble} averages fixed ingredients, \texttt{AdaptiveEnsemble} changes weights based on recent performance, and \texttt{ShockSwitch} changes weights based on regime classification. \texttt{StackingNowcast}, by contrast, learns a direct meta-mapping from the set of base nowcasts into the final GDP nowcast and is therefore the most flexible combination design used in the thesis.
+
+\subsection{EarlyShockAdjusted}
+
+The final targeted month-1 crisis benchmark is \texttt{EarlyShockAdjusted}. It starts from the best \textit{Early}-stage baseline and then applies a smooth crisis correction:
+\begin{equation}
+    \hat{y}^{ESA}_t = \hat{y}^{base}_t - A_t,
+\end{equation}
+where the adjustment $A_t$ depends on a lockdown dummy, a smoothed shock-regime probability, agreement across multiple fast indicators, and the intensity of the shock composites. In the most extreme lockdown case, the model also uses the AR benchmark as an anchor in order to avoid implausibly high nowcasts.
+
+\section{Shock-Regime Classification}
+
+One of the more important features of the final framework is that crisis adjustment is not based on a hard threshold alone. Instead, a logistic regression classifier is used to estimate the probability of entering a shock regime:
+\begin{equation}
+    p_t = \Pr(S_t = 1 \mid z_t) = \frac{1}{1 + e^{-(\alpha + z_t'\beta)}},
+\end{equation}
+where $z_t$ includes the fast shock composite, banking and housing shock blocks, AMD/USD, AMD/RUB, oil, copper, and external stress features.
+
+Alongside the probability model, a sign-agreement rule was imposed. A downward crisis correction is activated only when several unrelated fast indicators jointly signal distress. This reduces false alarms in non-crisis quarters while preserving responsiveness during genuine systemic shocks.
+
+\section{Empirical Results}
+
+\subsection{Data, Information Stages, and Model Architecture Summary}
+
+Before turning to the headline forecast results, it is useful to summarize the empirical ingredients of the system in a compact way. The following tables provide that overview and make the chapter easier to read as a self-contained account of the nowcasting framework.
+
+\begin{table}[H]
+    \centering
+    \footnotesize
+    \setlength{\tabcolsep}{4pt}
+    \caption{Main data blocks used in the Armenian GDP nowcasting system, with emphasis on alternative sources.}
+    \label{tab:data_blocks_used}
+    \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{2.15cm}>{\raggedright\arraybackslash}p{1.45cm}YY@{}}
+        \toprule
+        Data block & Frequency & Main examples & Main role in the system \\
+        \midrule
+        Quarterly macro block & Quarterly & Armenia and Russia GDP growth, CPI, REER, labor-market, income, and expenditure aggregates & Provides macro structure and stabilizes the nowcast when same-quarter monthly information is still incomplete. \\
+        Monthly official block & Monthly & Economic Activity Index, CPI, industry, construction, services, loans, deposits, remittances, and monetary aggregates & Provides the core real-activity signal in the \textit{Mid} and \textit{Late} stages once official releases begin to arrive. \\
+        Alternative market block & Daily / monthly & AMD/USD, AMD/RUB, Brent oil, copper, and a financial-stress proxy & Supplies the first same-quarter signal in \textit{Early} and remains useful for external-spillover monitoring. \\
+        Alternative search and shock block & High-frequency & Housing stress, relocation, banking stress, jobs/IT relocation, and external-stress interactions & Captures crisis intensity and behavioral shifts before they appear in official releases. \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+\begin{table}[H]
+    \centering
+    \small
+    \caption{Information available in each nowcasting stage and the role of alternative data.}
+    \label{tab:stage_design_summary}
+    \begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{1.4cm}YYY}
+        \toprule
+        Stage & Information available & Main forecasting difficulty & Preferred interpretation \\
+        \midrule
+        Early & Lagged quarterly macro variables; month-1 alternative data from exchange rates, commodity prices, Google Trends composites, and shock features; no same-quarter official monthly releases & Sparse same-quarter information and maximum exposure to abrupt crisis noise & Alternative data has its highest marginal value here; \texttt{StackingNowcast} is still the strongest average performer, while explicitly shock-adjusted models remain essential for extreme crisis episodes. \\
+        Mid & Lagged quarterly structure; month-1 and month-2 alternative indicators; first official monthly releases for activity, prices, remittances, and selected financial variables & Combining heterogeneous signals without overweighting noise & Best stage for adaptive combinations, because alternative data and first official releases must be read jointly. \\
+        Late & Lagged quarterly structure; near-complete within-quarter coverage of the official monthly block for the target quarter; alternative indicators retained for external and shock monitoring & Refining the point nowcast and quantifying residual uncertainty & Best stage for the final operational nowcast, where official data dominate but alternative data still help confirm or question the signal. \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+Table~\ref{tab:stage_design_summary} makes the role of alternative data explicit. In the \textit{Early} stage, the nowcast would be materially weaker without exchange rates, commodity prices, Google Trends composites, and shock indicators because there is almost no same-quarter official information to work with. In the \textit{Mid} stage, alternative indicators do not disappear; instead, they complement the first official releases and help determine whether the official signal is consistent with broader market and behavioral movements. In the \textit{Late} stage, the official block becomes more informative because the within-quarter readings are more complete, but alternative data remain useful as a fast check on external spillovers and abrupt changes in regime.
+
+\begin{table}[H]
+    \centering
+    \small
+    \caption{Model taxonomy used in the thesis.}
+    \label{tab:model_taxonomy_summary}
+    \begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{2.0cm}YYY}
+        \toprule
+        Family & Models & Mathematical core & Main role in the thesis \\
+        \midrule
+        Time-series / structural & \texttt{AR}, \texttt{Bridge}, \texttt{MIDAS}, \texttt{DFM} (legacy \texttt{FactorAugmentedPCA} evaluated in earlier drafts) & Lag dynamics, ridge bridge equations, mixed-frequency aggregation, and state-space factor modeling & Provides interpretable benchmarks and the main theory-grounded representation of ragged-edge nowcasting. \\
+        Regularized ML & \texttt{ElasticNet}, \texttt{Huber}, \texttt{EarlyShockBridge} & Penalized regression, robust loss, crisis-sensitive restricted regressions & Screens high-dimensional predictors and stabilizes sparse-information forecasting. \\
+        Nonlinear ML & \texttt{RandomForest}, \texttt{GradientBoosting} & Tree ensembles and nonlinear interaction learning & Tests whether nonlinearities improve performance in a small-sample open-economy setting. \\
+        Combination models & \texttt{StackingNowcast}, \texttt{SimpleEnsemble}, \texttt{AdaptiveEnsemble}, \texttt{ShockSwitch} & Meta-learning, forecast averaging, inverse-error weighting, and regime-dependent switching & Delivers the main operational nowcast by combining complementary model classes; \texttt{StackingNowcast} is the final reference model. \\
+        Shock-adjusted models & \texttt{DFMShockAdjusted}, \texttt{EarlyShockAdjusted} & Structural nowcast plus crisis correction; baseline nowcast minus shock adjustment & Corrects the most important crisis-quarter failures of the baseline models. \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+Chapter 9 also uses a refreshed model set relative to earlier draft iterations. Earlier exploratory versions treated \texttt{FactorAugmentedPCA} and simpler combination schemes more centrally. In the final reported run, \texttt{MIDAS} replaces \texttt{FactorAugmentedPCA} in the main structural benchmark tables, \texttt{StackingNowcast} becomes the main operational reference model, and models such as \texttt{Huber}, \texttt{EarlyShockBridge}, and \texttt{Shadow} are interpreted primarily as secondary or diagnostic benchmarks. This distinction matters because the thesis conclusions are based on the refreshed benchmark set, not on the broader exploratory pool used during model development.
+
+\begin{table}[H]
+    \centering
+    \small
+    \caption{Shock-adjusted model variants and their economic logic.}
+    \label{tab:shock_adjustment_summary}
+    \begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{2.2cm}>{\raggedright\arraybackslash}p{2.5cm}YY}
+        \toprule
+        Baseline model & Adjusted version & Adjustment logic & Main use case \\
+        \midrule
+        \texttt{DFM} & \shortstack[l]{\texttt{DFMShock}\\\texttt{Adjusted}} & The raw factor nowcast is pulled toward a contemporaneous activity signal when the factor model diverges too far in a shock quarter. & Crisis-sensitive correction for \textit{Mid} and \textit{Late} stage factor nowcasts. \\
+        \shortstack[l]{Best \textit{Early}\\baseline} & \shortstack[l]{\texttt{EarlyShock}\\\texttt{Adjusted}} & A smooth crisis adjustment subtracts a lockdown- and shock-probability-driven correction from the month-1 baseline nowcast. & Dedicated repair for extreme sparse-information crisis quarters, especially 2020 Q2 \textit{Early}. \\
+        \shortstack[l]{Static model\\combination} & \texttt{ShockSwitch} & Forecast weights shift toward a shock specification when the estimated crisis probability rises. & Regime-aware operational averaging under changing conditions. \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+\subsection{Headline Accuracy}
+
+The final expanding-window backtest produced the following best-performing models by stage:
+\begin{itemize}
+    \item \textbf{Early}: \texttt{StackingNowcast}, MAPE $= 2.382\%$;
+    \item \textbf{Mid}: \texttt{StackingNowcast}, MAPE $= 2.369\%$;
+    \item \textbf{Late}: \texttt{StackingNowcast}, MAPE $= 1.875\%$.
+\end{itemize}
+
+The main implication is that combination models dominate operationally once a broad set of signals is available, while targeted crisis repair remains important for extreme month-1 episodes. The \textit{Early} stage is still the most fragile because it combines sparse information with the greatest exposure to abrupt crisis noise, but the stacking meta-learner now delivers the strongest average performance across all three stages.
+
+\begin{table}[H]
+    \centering
+    \caption{Headline benchmark accuracy by nowcast stage (MAPE, \%).}
+    \label{tab:headline_accuracy}
+    \begin{tabular}{lccc}
+        \hline
+        Model & Early & Mid & Late \\
+        \hline
+        StackingNowcast & 2.382 & 2.369 & 1.875 \\
+        AdaptiveEnsemble & 2.430 & 2.484 & 2.121 \\
+        ElasticNet & 2.722 & 2.972 & 2.872 \\
+        Bridge & 3.566 & 3.640 & 3.412 \\
+        ShockSwitch & 3.254 & 3.293 & 2.980 \\
+        EarlyShockAdjusted & 2.637 & -- & -- \\
+        DFMShockAdjusted & 4.133 & 3.324 & 2.863 \\
+        DFM & 4.133 & 4.670 & 3.788 \\
+        AR & 3.098 & 3.226 & 3.154 \\
+        \hline
+    \end{tabular}
+\end{table}
+
+Table~\ref{tab:headline_accuracy} contains the central ranking of the chapter. Three patterns stand out. First, \texttt{StackingNowcast} is the strongest stage winner in \textit{Early}, \textit{Mid}, and \textit{Late}, with average stage MAPE $2.209\%$. Second, \texttt{AdaptiveEnsemble} remains a strong operational comparator and still ranks near the top, especially after richer within-quarter information arrives. Third, the structural factor benchmarks remain important for interpretation, but they are not the best performers in average-accuracy terms.
+
+The ranking gap is also economically interpretable rather than only statistical. Relative to \texttt{AdaptiveEnsemble}, \texttt{StackingNowcast} lowers average stage MAPE from $2.345\%$ to $2.209\%$ (a $0.136$ percentage-point reduction). For a GDP year-on-year index typically near $100$--$110$, this corresponds to roughly $0.14$--$0.15$ index points lower absolute error per quarter. The magnitude is modest, but it is meaningful for policy briefing updates and near-term risk assessment.
+
+At the same time, the Armenian pseudo real-time sample is small by machine-learning standards. Each stage contains only 61 quarterly evaluation points, so model rankings should not be read as if they were estimated on a large macro panel. For that reason, the chapter reports both average forecast errors and formal pairwise predictive-accuracy tests. The ranking tables show which models are best on average; the Diebold--Mariano evidence indicates whether those ranking gaps are statistically decisive or whether they should be interpreted more cautiously.
+
+\begin{table}[H]
+    \centering
+    \small
+    \caption{Selected Diebold--Mariano tests for the stage winners using one-step-ahead squared-error loss. Small p-values provide stronger evidence for the listed winner.}
+    \label{tab:dm_selected}
+    \resizebox{\textwidth}{!}{%
+    \begin{tabular}{llccc}
+        \hline
+        Stage & Comparison & DM statistic & p-value & Interpretation \\
+        \hline
+        Early & \texttt{StackingNowcast} vs \texttt{AdaptiveEnsemble} & -0.562 & 0.576 & Not statistically decisive \\
+        Mid & \texttt{StackingNowcast} vs \texttt{AdaptiveEnsemble} & -0.123 & 0.902 & Not statistically decisive \\
+        Late & \texttt{StackingNowcast} vs \texttt{AdaptiveEnsemble} & -1.310 & 0.195 & Not statistically decisive \\
+        \hline
+    \end{tabular}
+    }
+\end{table}
+
+Table~\ref{tab:dm_selected} strengthens the interpretation of the ranking tables. Point estimates now favor \texttt{StackingNowcast} across all stages, but none of the pairwise Diebold--Mariano gaps against \texttt{AdaptiveEnsemble} are statistically decisive at conventional levels. That is not a failure of the framework; it is the expected result when a small open economy offers only a limited quarterly history and several reasonable models perform similarly in normal periods.
+
+One additional caveat is multiple testing. The chapter reports selected pairwise DM comparisons as directional evidence, and the corresponding p-values are not adjusted by a formal family-wise correction (for example Holm-Bonferroni) across the full model-comparison grid. The DM results should therefore be interpreted as supportive but non-definitive evidence alongside the stable ranking patterns.
+
+\subsection{Marginal Value of Google Trends Composites}
+
+Because the thesis claims that alternative search-based signals are especially useful at the beginning of the quarter, the Google Trends block should be evaluated separately rather than only absorbed into a larger model family comparison. To do that, the study ran a focused \textit{Early}-stage ablation using a ridge-style benchmark with four information sets: a structural base, the base plus market variables, the base plus Google Trends composites, and the full combination of base, market, and Google composites.
+
+\begin{table}[H]
+    \centering
+    \small
+    \caption{Early-stage Google Trends composite ablation. The comparison isolates the marginal role of the search-based composite block from the fast market-variable block.}
+    \label{tab:google_ablation}
+    \begin{tabular}{lcc}
+        \hline
+        Information set & MAPE (\%) & RMSE \\
+        \hline
+        Base & 3.585 & 5.549 \\
+        Base + Google composites & 3.787 & 5.890 \\
+        Base + market variables & 3.295 & 4.957 \\
+        Base + market variables + Google composites & 3.252 & 4.710 \\
+        \hline
+    \end{tabular}
+\end{table}
+
+The refreshed ablation gives a more precise reading of the alternative-data claim after the fintech-admin block was added to the broader feature set. Relative to the structural base, the fast market block still delivers a clear \textit{Early}-stage improvement, with MAPE falling from $3.585\%$ to $3.295\%$. Adding the Google composite block on top of the market variables now produces a small additional gain, reducing MAPE to $3.252\%$ and RMSE to $4.710$. However, the corresponding Diebold--Mariano comparison between \texttt{Base + market} and \texttt{Base + market + Google composites} remains statistically weak ($p = 0.615$). The correct interpretation is therefore careful rather than triumphalist: the Google composite block can add a small incremental improvement in the refreshed specification, but the evidence is still not strong enough to claim a decisive standalone accuracy effect.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.84\textwidth]{google_trends_marginal_value.png}
+    \caption{Marginal value of Google Trends composites in the \textit{Early} nowcasting stage. The figure shows that the market block delivers the largest improvement over the structural base, while adding Google composites on top of the market block provides a smaller but still directionally favorable MAPE gain.}
+    \label{fig:google_ablation}
+\end{figure}
+
+\begin{table}[H]
+    \centering
+    \small
+    \caption{Top five model rankings by information stage.}
+    \label{tab:top5_by_stage}
+    \resizebox{\textwidth}{!}{%
+    \begin{tabular}{llclclc}
+        \hline
+        Rank & Early model & MAPE & Mid model & MAPE & Late model & MAPE \\
+        \hline
+        1 & StackingNowcast & 2.382 & StackingNowcast & 2.369 & StackingNowcast & 1.875 \\
+        2 & AdaptiveEnsemble & 2.449 & AdaptiveEnsemble & 2.502 & AdaptiveEnsemble & 2.140 \\
+        3 & EarlyShockAdjusted & 2.656 & SimpleEnsemble & 2.783 & Shadow & 2.506 \\
+        4 & ElasticNet & 2.741 & RandomForest & 2.964 & SimpleEnsemble & 2.732 \\
+        5 & SimpleEnsemble & 2.853 & ElasticNet & 2.984 & DFMShockAdjusted & 2.876 \\
+        \hline
+    \end{tabular}
+    }
+\end{table}
+
+\begin{table}[H]
+    \centering
+    \small
+    \caption{Average accuracy by model family and stage (MAPE, \%).}
+    \label{tab:family_stage_summary}
+    \begin{tabular}{lccc}
+        \hline
+        Family & Early & Mid & Late \\
+        \hline
+        Combination & 2.725 & 2.732 & 2.424 \\
+        Structural & 3.642 & 3.671 & 3.229 \\
+        ML & 5.979 & 4.150 & 3.486 \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\begin{table}[H]
+    \centering
+    \small
+    \caption{Selected robustness diagnostics for key benchmark models.}
+    \label{tab:robustness_selected}
+    \resizebox{\textwidth}{!}{%
+    \begin{tabular}{llcccc}
+        \hline
+        Model & Stage & Overall MAPE & Shock MAPE & Non-shock MAPE & Prediction bias \\
+        \hline
+        EarlyShockAdjusted & Early & 2.656 & 3.435 & 2.402 & 0.726 \\
+        ElasticNet & Early & 2.741 & 4.287 & 2.236 & -0.969 \\
+        StackingNowcast & Mid & 2.369 & 2.646 & 2.189 & 0.106 \\
+        StackingNowcast & Late & 1.875 & 2.228 & 1.661 & 0.142 \\
+        DFMShockAdjusted & Mid & 3.343 & 3.024 & 3.549 & -2.136 \\
+        DFMShockAdjusted & Late & 2.876 & 2.470 & 3.121 & -1.754 \\
+        DFM & Mid & 4.608 & 6.241 & 3.549 & -4.259 \\
+        AR & Early & 3.117 & 3.730 & 2.917 & -1.639 \\
+        \hline
+    \end{tabular}
+    }
+\end{table}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.88\textwidth]{backtest_stage_mape.png}
+    \caption{Benchmark accuracy across the three information stages. The figure shows that model ranking is stage-dependent, with combination models led by \texttt{StackingNowcast} performing best on average in all three stages, while targeted shock-adjusted specifications remain important for extreme crisis quarters.}
+    \label{fig:stage_mape}
+\end{figure}
+
+Figure~\ref{fig:stage_mape} summarizes the empirical results visually. It makes clear that the Armenian GDP nowcasting problem does not look the same throughout the quarter. In the \textit{Early} stage, the forecaster sees only a limited fast-information set and the value of explicit shock correction is highest. In the \textit{Mid} and \textit{Late} stages, the informational advantage shifts toward models that combine several complementary signals.
+
+A compact calibration diagnostic for the operational winner \texttt{StackingNowcast} confirms this interpretation. The empirical 50\%/90\% interval coverage rates are \textit{Early} $0.528/0.792$, \textit{Mid} $0.491/0.887$, and \textit{Late} $0.491/0.906$. This indicates broadly acceptable high-coverage behavior at the 90\% level with some undercoverage in tighter 50\% bands, especially outside the \textit{Early} stage. In parallel, DFM fit metadata show stable estimation in the refreshed run: for both \texttt{DFM} and \texttt{DFMShockAdjusted}, most fits use \texttt{2f\_full\_ar1} (58/61 in \textit{Early}, 60/61 in \textit{Mid}, 60/61 in \textit{Late}), the remainder use \texttt{2f\_full\_white\_noise}, and convergence flags are true for all stage-quarter evaluations.
+
+\subsection{Structural and Crisis Benchmarks}
+
+Among factor-based and structural benchmarks, the hierarchy is the following:
+\begin{itemize}
+    \item \texttt{DFM} is the main theory-grounded mixed-frequency benchmark;
+    \item \texttt{DFMShockAdjusted} is the strongest crisis-corrected factor benchmark;
+    \item \texttt{MIDAS} replaces the old PCA-factor baseline and avoids catastrophic timing-loss failures.
+\end{itemize}
+
+The \texttt{DFMShockAdjusted} benchmark achieves:
+\begin{itemize}
+    \item \textbf{Mid}: MAPE $= 3.343\%$;
+    \item \textbf{Late}: MAPE $= 2.876\%$.
+\end{itemize}
+
+This confirms that the true DFM remains academically valuable, but the operationally best model in this application is a stacked combination model rather than a single structural specification.
+
+\begin{table}[H]
+    \centering
+    \caption{Factor and structural benchmark comparison (MAPE, \%).}
+    \label{tab:factor_comparison}
+    \begin{tabular}{lccc}
+        \hline
+        Model & Early & Mid & Late \\
+        \hline
+        AR & 3.098 & 3.226 & 3.154 \\
+        Bridge & 3.566 & 3.640 & 3.412 \\
+        MIDAS & 3.280 & 3.495 & 2.929 \\
+        DFM & 4.133 & 4.670 & 3.788 \\
+        DFMShockAdjusted & 4.133 & 3.324 & 2.863 \\
+        \hline
+    \end{tabular}
+\end{table}
+
+Table~\ref{tab:factor_comparison} shows why it is necessary to distinguish between structural relevance and operational accuracy. The MIDAS replacement behaves like a stable structural benchmark without the severe PCA-compression failure seen in earlier drafts. The true mixed-frequency DFM is methodologically superior, but it still needs a crisis correction. Once that correction is added, \texttt{DFMShockAdjusted} becomes the strongest factor benchmark in \textit{Mid} and \textit{Late}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.88\textwidth]{backtest_dfm_shock_adjusted.png}
+    \caption{Actual GDP growth and the crisis-adjusted factor benchmark in the \textit{Late} stage. The figure illustrates the role of the DFM as a structural benchmark and shows how the crisis-adjusted version reduces the raw factor model's overprediction during abrupt downturns.}
+    \label{fig:dfm_adjusted}
+\end{figure}
+
+Figure~\ref{fig:dfm_adjusted} matters for the structural interpretation of the results. The adjusted DFM is not the best model in average-accuracy terms, but it is the strongest theory-grounded factor benchmark. The figure shows that the state-space model becomes substantially more useful once the contemporaneous activity signal is allowed to discipline the latent factor during crisis quarters.
+
+\subsection{Crisis-Quarter Results}
+
+The hardest quarter in the sample is 2020 Q2, especially in the \textit{Early} stage, where same-quarter official monthly indicators are not yet available. After the final lockdown-specific calibration, the dedicated \texttt{EarlyShockAdjusted} benchmark reduced the error for \textbf{2020 Q2 Early} to
+\begin{equation}
+    \text{APE}_{2020Q2,\ Early}^{ESA} = 11.459\%.
+\end{equation}
+
+This result matters because earlier general-purpose models produced much larger errors for the same case. The implication is not that one universal model solves every state of the world. Rather, the evidence shows that:
+\begin{enumerate}
+    \item general-purpose models perform well on average;
+    \item the DFM is the correct structural mixed-frequency benchmark;
+    \item targeted regime adjustments are necessary for extreme month-1 crisis quarters.
+\end{enumerate}
+
+\begin{table}[H]
+    \centering
+    \small
+    \caption{Selected crisis-quarter absolute percentage errors (\%). Column labels use abbreviated model names.}
+    \label{tab:shock_quarter_results}
+    \begin{tabular}{llccccc}
+        \toprule
+        Quarter & Stage & AdaEns & ENet & Bridge & DFM-SA & ESA \\
+        \midrule
+        2020 Q2 & Early & 15.827 & 18.045 & 13.854 & 19.964 & 11.459 \\
+        2020 Q2 & Mid   & 14.619 & 11.154 & 11.684 & 7.494  & -- \\
+        2020 Q2 & Late  & 13.548 & 15.959 & 12.961 & 6.295  & -- \\
+        2021 Q2 & Early & 7.692  & 4.599  & 4.583  & 0.358  & 4.599 \\
+        2021 Q4 & Early & 7.136  & 4.730  & 1.440  & 6.182  & 7.593 \\
+        2022 Q2 & Mid   & 4.472  & 4.671  & 0.497  & 2.101  & -- \\
+        2022 Q2 & Late  & 3.497  & 3.558  & 1.778  & 1.935  & -- \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+In Table~\ref{tab:shock_quarter_results}, AdaEns denotes \texttt{AdaptiveEnsemble}, ENet denotes \texttt{ElasticNet}, DFM-SA denotes \texttt{DFMShockAdjusted}, and ESA denotes \texttt{EarlyShockAdjusted}.
+
+Table~\ref{tab:shock_quarter_results} is the main stress-test table in the chapter. It shows that the hardest crisis case is not simply ``a recession quarter'' but specifically the \textit{Early} stage of 2020 Q2. In that setting, the dedicated \texttt{EarlyShockAdjusted} benchmark dominates the alternatives by a very large margin. By contrast, in \textit{Mid} and \textit{Late}, the most important crisis correction comes from \texttt{DFMShockAdjusted}. This supports the stage-dependent design of the final system.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.88\textwidth]{focus_2020q2_models.png}
+    \caption{Evolution of the 2020 Q2 nowcast across the quarter. This is the central crisis-quarter figure in the thesis because it shows how forecast accuracy changes between \textit{Early}, \textit{Mid}, and \textit{Late} as new information arrives.}
+    \label{fig:focus_2020q2}
+\end{figure}
+
+Figure~\ref{fig:focus_2020q2} functions as the main case study of the chapter. It shows that the hard part of crisis nowcasting is not simply forecasting a recession. The real difficulty is forecasting a sudden collapse with only month-1 information. Once official monthly releases begin to appear, the forecast improves quickly. That is why the final conclusion is stage-dependent rather than universally model-dependent.
+
+\subsection{Preferred Final Model Interpretation}
+
+From an \textit{operational} perspective, the preferred final model on average is \texttt{StackingNowcast}, because it is the most accurate specification among models that can be used in all three information stages and it wins in \textit{Early}, \textit{Mid}, and \textit{Late}. From a \textit{structural} perspective, the preferred benchmark is \texttt{DFM}. For \textit{extreme early-shock correction}, the relevant benchmark is \texttt{EarlyShockAdjusted}. This stage- and regime-dependent conclusion is one of the main contributions of the thesis.
+
+\subsection{Detailed Model-by-Model Interpretation}
+
+Average ranking alone is not sufficient. The chapter also needs to explain why the main models work, where they break down, and what those patterns imply for practical nowcasting.
+
+\begin{table}[H]
+    \centering
+    \footnotesize
+    \caption{Interpretation of the main benchmark models.}
+    \label{tab:model_interpretation_detail}
+    \begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{3.9cm}YYY}
+        \toprule
+        Model & Where it performs well & Where it fails or weakens & Empirical interpretation \\
+        \midrule
+        \texttt{StackingNowcast} & Best full-stage operational model; strongest average error profile across all stages; low bias and robust late-stage accuracy. & Still vulnerable in the most extreme month-1 collapse, especially 2020 Q2 \textit{Early}. & Meta-learning across model classes is the most reliable operational strategy once multiple signals become available. \\
+        \texttt{ElasticNet} & Strong in \textit{Early}; good non-shock performance; benefits from regularization when the predictor set is large and sparse. & Less dominant once richer official information becomes available; still vulnerable in severe shock quarters. & Regularization is highly valuable when the information set is thin, but not sufficient by itself for crisis repair. \\
+        \texttt{Bridge} & Economically interpretable and reasonably stable across normal quarters. & Does not dominate in any stage; weaker than the leading ML and combination models in both average and crisis performance. & The bridge model remains useful as an interpretable benchmark, but not as the preferred operational system. \\
+        \texttt{DFM} & Strongest theory-grounded mixed-frequency benchmark; academically defensible structure. & Systematic overprediction, especially in \textit{Mid}; weak crisis handling because the latent factor smooths abrupt breaks. & Structural rigor alone is not enough in a shock-prone small open economy. \\
+        \texttt{DFMShockAdjusted} & Clear improvement over raw \texttt{DFM} in \textit{Mid} and \textit{Late}; strongest factor benchmark in crisis-sensitive settings. & Provides no meaningful improvement in \textit{Early}; still not the best average-accuracy model overall. & Crisis correction materially improves the structural benchmark once contemporaneous activity information exists. \\
+        \texttt{EarlyShockAdjusted} & Best \textit{Early}-stage model; decisive gain in 2020 Q2 \textit{Early}; strongest targeted repair for sparse-information crisis nowcasting. & Available only for the \textit{Early} stage and not intended as the universal final model. & A dedicated shock-adjusted month-1 benchmark is necessary for extreme crisis quarters. \\
+        \texttt{AR} & Stable baseline; relatively good post-2022 performance; useful anchor against implausible forecasts. & Persistent overprediction in shock periods and weaker use of contemporaneous information. & Simplicity gives robustness, but at the cost of responsiveness. \\
+        \texttt{ShockSwitch} & Balanced regime-aware combination with respectable rankings in all stages. & Does not beat \texttt{StackingNowcast} on average and does not solve the deepest early-COVID miss by itself. & Regime switching helps, but a learned stacking layer remains stronger operationally. \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+The time-series and structural models matter mainly because they define the economically interpretable baseline of the thesis. The \texttt{AR} specification is stable and continues to perform reasonably well in the later post-2022 period, but its negative mean residual shows persistent overprediction in shock episodes. The \texttt{Bridge} model is easier to explain economically than most machine-learning benchmarks, yet it remains weaker than the best operational models. The raw \texttt{DFM} is the clearest example of the tradeoff between academic structure and empirical flexibility: in theory it is the correct mixed-frequency benchmark, but in practice its residual profile shows that it smooths through sharp collapses too aggressively and therefore overpredicts when Armenia experiences abrupt turning points.
+
+The machine-learning results are clearly stage-dependent. \texttt{ElasticNet} is strong because the \textit{Early} nowcast is a sparse-information problem, and penalization helps identify the most useful fast indicators without producing an unstable saturated regression. The nonlinear ML models, especially \texttt{RandomForest} and \texttt{GradientBoosting}, do not dominate the benchmark tables, which is consistent with the small-sample nature of the Armenian GDP application. Their flexibility is not enough to offset limited historical depth and abrupt regime changes. The \texttt{Huber} specification likewise remains diagnostic rather than operational, because robust loss on its own does not solve the information-availability problem.
+
+The combination and shock-adjusted models represent the strongest practical contribution of the thesis. \texttt{StackingNowcast} is the best operational model because it combines structural and ML signals without committing to a single specification across all regimes. \texttt{AdaptiveEnsemble} and \texttt{ShockSwitch} remain useful regime-aware combinations, but they do not outperform the stacking meta-learner on average. Most importantly, the shock-adjusted models show where targeted correction is actually needed. \texttt{DFMShockAdjusted} repairs the structural factor benchmark once \textit{Mid} and \textit{Late} information becomes available, while \texttt{EarlyShockAdjusted} is the key month-1 crisis benchmark that addresses the most difficult failure in the sample.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.88\textwidth]{selected_model_bias_profile.png}
+    \caption{Bias profile of selected benchmark models by stage. Positive residuals indicate underprediction and negative residuals indicate overprediction because the residual is defined as actual minus prediction. The figure is useful for identifying which models fail because they are too optimistic and which fail because they react too slowly to new information.}
+    \label{fig:bias_profile}
+\end{figure}
+
+Figure~\ref{fig:bias_profile} helps interpret the ranking tables more carefully. The raw \texttt{DFM} and \texttt{AR} benchmarks show the strongest negative residuals, meaning that they tend to overpredict GDP during difficult episodes. By contrast, \texttt{StackingNowcast} and \texttt{ElasticNet} stay much closer to zero bias, while \texttt{DFMShockAdjusted} visibly reduces the structural overprediction problem in \textit{Mid} and \textit{Late}.
+
+\subsection{Forecast Revision Dynamics}
+
+Average error metrics do not fully describe how the forecasting system behaves over time. It is also useful to examine the full cloud of nowcasts as it evolves across quarters. The spaghetti chart below does that by plotting many model-stage nowcasts as thin lines and then highlighting the ensemble mean, the adaptive comparator path, and the realized GDP path.
+
+Two points stand out in this figure. First, in normal quarters the highlighted nowcasts cluster fairly tightly around realized GDP, which implies limited model disagreement when the macroeconomic environment is stable. Second, in shock quarters the fan of predictions widens considerably, especially around 2020 Q2 and the later Russia-related adjustment period. This confirms that the largest nowcast errors arise when the information set is sparse and the economy is undergoing abrupt change. In other words, the Armenian nowcasting problem is both stage-dependent and regime-dependent.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.88\textwidth]{adaptive_ensemble_spaghetti.png}
+    \caption{Ensemble-style spaghetti chart for Armenian GDP nowcasting. Thin gray lines show individual model-stage nowcasts across target quarters, while the highlighted lines show the ensemble mean, the \texttt{AdaptiveEnsemble} paths by information stage, the realized GDP path, and the sample mean. The figure illustrates both the dispersion of model-based nowcasts and the way forecasts cluster around the realized GDP trajectory outside the most difficult shock quarters.}
+    \label{fig:spaghetti_nowcast}
+\end{figure}
+
+Figure~\ref{fig:spaghetti_nowcast} adds an ensemble perspective to the chapter. The model's average performance is not simply the result of one favorable stage or one unusual quarter. Instead, the chart shows the broader cloud of nowcasts produced by competing specifications and highlights how the preferred operational model evolves relative to the ensemble mean and the realized GDP path. At the same time, the wider divergence around quarters such as 2020 Q2 makes clear why targeted early-shock correction remains necessary.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.88\textwidth]{stage_winner_small_multiples.png}
+    \caption{Best-performing model by stage across the full sample. The figure shows the realized GDP path against the winning specification in \textit{Early}, \textit{Mid}, and \textit{Late}. This makes the stage-dependent nature of the final system visually explicit.}
+    \label{fig:stage_winners}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.82\textwidth]{model_ranking_heatmap.png}
+    \caption{Heatmap of model ranking by information stage. Lower MAPE values indicate stronger performance. The visual compactly shows that model dominance changes across stages and that no single baseline wins everywhere.}
+    \label{fig:ranking_heatmap}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.88\textwidth]{family_shock_nonshock.png}
+    \caption{Shock and non-shock accuracy by model family. The figure highlights that combination models are the most robust family overall, while structural and pure ML families are more stage-dependent under crisis conditions.}
+    \label{fig:family_shock_nonshock}
+\end{figure}
+
+The remaining visual diagnostics complement the main tables by showing information availability, uncertainty, family-level behavior, and the direct tracking performance of the preferred operational model.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.88\textwidth]{focus_2020q2_information_set.png}
+    \caption{Information-set composition for 2020 Q2. The \textit{Early} stage contains no same-quarter official monthly series, while \textit{Mid} introduces the first official monthly release and \textit{Late} adds fuller within-quarter coverage of the same series.}
+    \label{fig:info_2020q2}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.88\textwidth]{release_calendar_information_flow.png}
+    \caption{Release calendar and information flow across the quarter. The figure illustrates the methodological logic of the framework: the \textit{Early} stage relies mainly on fast indicators, \textit{Mid} adds the first official monthly release, and \textit{Late} benefits from fuller within-quarter coverage of the official monthly indicators.}
+    \label{fig:release_calendar}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.88\textwidth]{forecast_uncertainty_bands.png}
+    \caption{Forecast uncertainty bands for the preferred late-stage model. The 50\% and 90\% empirical intervals show that the framework produces not only point nowcasts but also uncertainty assessments.}
+    \label{fig:uncertainty_bands}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.88\textwidth]{model_family_comparison.png}
+    \caption{Comparison of structural, machine-learning, and combination model families. The figure shows that combination models dominate on average, which supports the choice of \texttt{StackingNowcast} as the preferred operational specification in the refreshed run.}
+    \label{fig:model_family}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.88\textwidth]{backtest_best_late_model.png}
+    \caption{Actual GDP growth and the preferred late-stage operational model. The \texttt{StackingNowcast} path tracks the realized GDP series closely while remaining stable during both normal and shock periods.}
+    \label{fig:best_late_model}
+\end{figure}
+
+Figure~\ref{fig:info_2020q2} helps explain why the month-1 crisis case is so difficult. In 2020 Q2 \textit{Early}, the model had to rely on fast market and search-based information because no same-quarter official monthly activity indicators had yet been released.
+
+Figure~\ref{fig:release_calendar} acts as the methodological bridge between the data and results sections. It explains why the same economy may require different model classes at different points within the same quarter.
+
+Figure~\ref{fig:uncertainty_bands} adds an important central-bank-style dimension to the analysis. A nowcast is not only a point estimate; it also carries uncertainty. Including that uncertainty makes the empirical discussion more complete.
+
+\section{Forward GDP Projection Through 2026 Q4}
+
+The pseudo real-time nowcasting system described in this chapter is evaluated through the latest quarter for which the workbook contains realized GDP, namely \textbf{2026 Q1}. To extend the analysis beyond the nowcast sample, a separate short-horizon quarterly forecasting exercise was run using the same historical quarterly database. This forward exercise is not a same-quarter nowcast, because for \textbf{2026 Q2--2026 Q4} the model no longer observes contemporaneous within-quarter releases. Instead, it produces recursive quarter-ahead forecasts conditional on the information available at the end of \textbf{2026 Q1}.
+
+Four compact forecasting specifications were compared in recursive backtests over historical data: \texttt{Ridge}, \texttt{RandomForest}, \texttt{StackingForecast}, and \texttt{ElasticNet}. The preferred forward model was \texttt{Ridge}, which achieved the lowest average recursive MAPE across the 1- to 3-quarter-ahead horizons. Importantly, this result is not driven by every horizon separately: \texttt{RandomForest} is slightly stronger at horizon 1, but \texttt{Ridge} is more stable at horizons 2 and 3 and therefore wins on average. The resulting point forecasts indicate a mild softening of Armenian GDP growth after \textbf{2026 Q1}, followed by broad stabilization close to the 104--105 range of the GDP year-on-year index.
+
+\begin{table}[H]
+    \centering
+    \small
+    \caption{Recursive quarterly forecast model comparison (MAPE, \%). The preferred model is selected by the average across horizons 1 to 3.}
+    \label{tab:forward_model_scores}
+    \begin{tabular}{lcccc}
+        \hline
+        Model & Horizon 1 & Horizon 2 & Horizon 3 & Average 1--3 \\
+        \hline
+        \texttt{Ridge} & 3.271 & 3.868 & 3.988 & 3.709 \\
+        \texttt{RandomForest} & 3.156 & 3.981 & 4.319 & 3.819 \\
+        \texttt{StackingForecast} & 3.306 & 4.268 & 4.321 & 3.965 \\
+        \texttt{ElasticNet} & 3.723 & 4.124 & 4.191 & 4.012 \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\begin{table}[H]
+    \centering
+    \small
+    \caption{Forward GDP projection through 2026 Q4 based on the information set available at the end of 2026 Q1. The intervals are empirical bands derived from historical recursive forecast errors of the selected \texttt{Ridge} model.}
+    \label{tab:forward_forecast_2026}
+    \begin{tabular}{lcccccc}
+        \toprule
+        Quarter & Horizon & Forecast & 50\% Low & 50\% High & 90\% Low & 90\% High \\
+        \midrule
+        2026 Q2 & 1 & 105.105 & 102.866 & 107.343 & 97.276 & 112.933 \\
+        2026 Q3 & 2 & 104.250 & 101.811 & 106.688 & 95.420 & 113.080 \\
+        2026 Q4 & 3 & 104.096 & 101.459 & 106.732 & 93.606 & 114.585 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+Table~\ref{tab:forward_forecast_2026} should be interpreted carefully. The point forecasts are informative, but the uncertainty bands widen with the horizon, which is exactly what one would expect once the system moves from nowcasting into true forecasting. The results therefore suggest \textit{moderate deceleration rather than collapse}, but they should be read as conditional projections rather than as deterministic statements about realized GDP.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.90\textwidth]{future_gdp_forecast_dark.png}
+    \caption{Forward projection of Armenian GDP through 2026 Q4. The white line shows the recent realized GDP path, the blue diamonds show the recursive forecasts from the selected \texttt{Ridge} model, and the shaded bands show empirical 50\% and 90\% forecast intervals.}
+    \label{fig:forward_forecast_2026}
+\end{figure}
+
+Figure~\ref{fig:forward_forecast_2026} complements the backtest figures by shifting from evaluation to projection. Its substantive message is straightforward: conditional on the information available by the end of \textbf{2026 Q1}, the most likely path is one of continued positive but somewhat cooler GDP growth in the remaining quarters of 2026. In practical terms, this means the thesis not only identifies the best stage-dependent nowcasting framework for Armenia, but also produces an internally consistent short-horizon projection once the nowcast sample ends.
+
+\section{Final Conclusion for the Thesis}
+
+The evidence presented in this chapter leads to four main conclusions.
+
+First, a leakage-safe expanding-window evaluation is essential in a defensible nowcasting study. The quality of the Armenian GDP nowcast changes substantially across information stages, so a single static train-test split is not sufficient.
+
+Second, the best \textit{overall operational model} is \texttt{StackingNowcast}. Its strength comes from combining model classes through a meta-learner that adapts across normal and shock periods.
+
+Third, the best \textit{theory-grounded mixed-frequency benchmark} is the true \texttt{DFM}. Even when it is not the overall winner in average forecast accuracy, it remains the most academically defensible structural model because it handles ragged-edge monthly information directly.
+
+Fourth, the most difficult month-1 crisis case, namely \textbf{2020 Q2 Early}, can be handled credibly only with a dedicated shock-adjusted benchmark. The final \texttt{EarlyShockAdjusted} specification reduces that error materially and shows that crisis nowcasting in small open economies requires explicit regime-sensitive correction rather than a purely static model choice.
+
+At the same time, the chapter also clarifies the limits of what can be claimed statistically. Most Diebold--Mariano comparisons are not decisive at conventional levels, which means the model rankings should be interpreted as cautious operational preferences rather than as definitive proof of superiority. That result is consistent with the underlying sample constraint: each information stage contains only 61 quarterly evaluation points, so the Armenian application is informative but not high-powered by the standards of large-country forecast-comparison studies.
+
+The same caution applies to the alternative-data claim. In the refreshed ablation, the fast market block still delivers the main improvement, while the Google composite block adds only a modest further gain that is not statistically decisive. The newer administrative fintech variables are more valuable as structural context than as a dramatic standalone accuracy breakthrough. The correct interpretation is therefore not that one alternative source dominates the nowcast, but that alternative data work best as a layered supplement to the macro and market core.
+
+Overall, the contribution of the thesis is not the identification of one universally best model. It is the construction of a \textit{literature-informed, pseudo real-time, shock-aware nowcasting system for Armenia} in which model choice is allowed to vary with the information stage and the crisis regime. An important part of that contribution is the explicit use of alternative data sources: they are most valuable in the \textit{Early} stage, complementary in the \textit{Mid} stage, and still informative in the \textit{Late} stage as rapid indicators of external stress and regime change. That gives the thesis both academic and practical value: it shows how a small open economy can build a transparent nowcasting framework that remains useful in both normal periods and abrupt shock episodes without overstating the precision of the evidence.
+
+\end{document}

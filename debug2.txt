@@ -1,8 +1,0 @@
-294: '\n'
-295: '        st.stop()\n'
-296: '\n'
-297: '    summary, predictions = load_nowcasting_results()\n'
-298: '    ablation_summary, ablation_dm = load_google_ablation()\n'
-299: '    if summary is None or predictions is None:\n'
-300: '        st.error("Nowcasting արդյունքները չեն գտնվել։ Սպասվում են `nowcasting_results/backtest_summary.csv` և `nowcasting_results/backtest_predictions.csv` ֆայլերը։")\n'
-301: '    else:\n'
